@@ -1,7 +1,7 @@
-if (typeof ku6goma === "undefined") globalThis.ku6goma = {};
-if (!ku6goma.slim) ku6goma.slim = {};
+import * as slim from "./slim.js";
+
 (function(){
-	var SlimUIError = ku6goma.slim.SlimUIError = function (message) {
+	var SlimUIError = function (message) {
 		this.message = message;
 	};
 	SlimUIError.prototype.toString = function () {
@@ -30,7 +30,7 @@ if (!ku6goma.slim) ku6goma.slim = {};
 		"weight_x", "weight_y", "space_x", "descender", "ascender", "xHeight", "topBearing", "bottomBearing"
 	];
 	function drawSvg(str) {
-		var svg = ku6goma.slim.getSvg(str);
+		var svg = slim.getSvg(str);
 		document.getElementById("svgarea").innerHTML = svg;
 		var svgelm = document.getElementById("svg");
 		if (!svgelm || !svgelm.setAttribute) throw new SlimUIError("svg seems unsupported");
@@ -40,7 +40,7 @@ if (!ku6goma.slim) ku6goma.slim = {};
 		svgelm.setAttribute("height", max_h);
 	}
 	function drawVml(str) {
-		var pd = ku6goma.slim.getPathD(str);
+		var pd = slim.getPathD(str);
 		var pathd = pd[0];
 		var buffer = "";
 		var p = function (idx) {
@@ -147,7 +147,7 @@ if (!ku6goma.slim) ku6goma.slim = {};
 		vmlarea.style.height = max_h + "px";
 	}
 	function drawCanvas(str) {
-		var pd = ku6goma.slim.getPathD(str);
+		var pd = slim.getPathD(str);
 		var pathd = pd[0];
 		var zoom = 1;
 		var max_w = document.body.clientWidth - 100;
@@ -428,7 +428,7 @@ if (!ku6goma.slim) ku6goma.slim = {};
 				}
 				map2[key] = val;
 			}
-			ku6goma.slim.setValues(map2);
+			slim.setValues(map2);
 			document.getElementById("svgarea").style.display = "none";
 			document.getElementById("canvasarea").style.display = "none";
 			document.getElementById("vmlarea").style.display = "none";
@@ -480,5 +480,3 @@ if (!ku6goma.slim) ku6goma.slim = {};
 		}
 	});
 })();
-
-export {};

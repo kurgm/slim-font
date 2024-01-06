@@ -1,7 +1,5 @@
 // generated at 2013-11-03T17:29
-if (typeof ku6goma === "undefined") globalThis.ku6goma = {};
-if (!ku6goma.slim) ku6goma.slim = {};
-ku6goma.slim.database = {
+export default {
 ".notdef":{"id":"notdef","slim":["t,0 t,2 b,2 b,0 t,0","bt,0 bb,2","bt,2 bb,0"]},
 "uni0020":{"width":"1","slim":[]},
 "uni0021":{"slim":["t,0 b-1-1x,0","b,0"]},
@@ -1155,6 +1153,4 @@ ku6goma.slim.database = {
 "uni1ef1":{"slim":["#uni01b0","#uni0323/combining#0.5"]},
 "uni1ef4":{"slim":["#uni0059","#uni0323/Combining#0.5"]},
 "uni1ef5":{"slim":["#uni0079","#uni0323/combining#0.5"]}
-}
-
-export {};
+};

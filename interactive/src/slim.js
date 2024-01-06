@@ -1,13 +1,14 @@
-if (typeof ku6goma === "undefined") globalThis.ku6goma = {};
-if (!ku6goma.slim) ku6goma.slim = {};
-(function (slim) {
+import slimDatabase from "./slim_db.js";
+
+const slim = {};
+(function () {
 	slim.SlimError = function (message) {
 		this.message = message;
 	};
 	slim.SlimError.prototype.toString = function () {
 		return this.message;
 	};
-	if (!slim.database) slim.database = {};
+	slim.database = slimDatabase;
 	function hypot (x, y) {
 		return Math.sqrt(x * x + y * y);
 	}
@@ -510,6 +511,12 @@ if (!ku6goma.slim) ku6goma.slim = {};
 	slim.getSvg = function(string) {
 		return exampleStringSvg(slim.database, string || "");
 	};
-})(ku6goma.slim);
+})();
 
-export {};
+export const {
+	SlimError,
+	database,
+	setValues,
+	getPathD,
+	getSvg
+} = slim;
