@@ -1,4 +1,5 @@
-if (!("ku6goma" in this)) ku6goma = {};
+"use strict";
+if (typeof ku6goma === "undefined") globalThis.ku6goma = {};
 if (!ku6goma.slim) ku6goma.slim = {};
 (function(){
 	var SlimUIError = ku6goma.slim.SlimUIError = function (message) {
@@ -61,7 +62,7 @@ if (!ku6goma.slim) ku6goma.slim = {};
 			var path = pathd[i].split(/[ ,]/);
 			var cur = [0, 0];
 			var mode = path[0];
-			for (var j = 0, jl = path.length; j < jl; j += clen) {
+			for (var j = 0, jl = path.length, clen; j < jl; j += clen) {
 				if (path[j].match(/^[MLAZ]$/i)) {
 					mode = path[j];
 					j++;
@@ -173,7 +174,7 @@ if (!ku6goma.slim) ku6goma.slim = {};
 			var cur = [0, 0];
 			var mode = path[0];
 			ctx.beginPath();
-			for (var j = 0, jl = path.length; j < jl; j += clen) {
+			for (var j = 0, jl = path.length, clen; j < jl; j += clen) {
 				if (path[j].match(/^[MLAZ]$/i)) {
 					mode = path[j];
 					j++;

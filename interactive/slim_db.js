@@ -1,5 +1,6 @@
+"use strict";
 // generated at 2013-11-03T17:29
-if (!("ku6goma" in this)) ku6goma = {};
+if (typeof ku6goma === "undefined") globalThis.ku6goma = {};
 if (!ku6goma.slim) ku6goma.slim = {};
 ku6goma.slim.database = {
 ".notdef":{"id":"notdef","slim":["t,0 t,2 b,2 b,0 t,0","bt,0 bb,2","bt,2 bb,0"]},

@@ -1,4 +1,5 @@
-if (!("ku6goma" in this)) ku6goma = {};
+"use strict";
+if (typeof ku6goma === "undefined") globalThis.ku6goma = {};
 if (!ku6goma.slim) ku6goma.slim = {};
 (function (slim) {
 	slim.SlimError = function (message) {
