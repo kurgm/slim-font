@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns:v="urn:schemas-microsoft-com:vml">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<!--[if IE 8]>
+<meta http-equiv="X-UA-Compatible" content="IE=EmulateIE7">
+<![endif]-->
+<title>Slim (in JavaScript)</title>
+<meta name="keywords" content="くろごま,Slim,文字,Unicode,フォント,JavaScript">
+<meta name="description" content="くろごまオリジナルフォント「Slim」のJavaScript移植版">
+<meta name="author" content="くろごま">
+<style type="text/css">
+.slim-main {
+margin: 0 50px;
+}
+#slim_params table {
+border-spacing: 0;
+border-collapse: collapse;
+border-color: #333;
+border-style: solid;
+border-width: 1px 1px 0;
+background-color: #fff;
+color: #000;
+padding: 0;
+}
+#slim_params table td {
+margin: 0;
+padding: 0;
+border-color: #333;
+border-style: solid;
+border-width: 0 0 1px;
+vertical-align: middle;
+}
+#slim_params table td:first-child {
+text-align:right;
+}
+#slim_params table td:last-child {
+text-align:left;
+}
+#slim_params input[type="number"] {
+	width: 4em;
+}
+#slim_params tr {
+	height: 120px;
+}
+.chararea {
+	background-color: #fff;
+	color: #000;
+}
+.columns-wrapper {
+	position: relative;
+}
+.column-l {
+	width: 200px;
+}
+.column-r {
+	position: absolute;
+	left: 201px;
+	top: 0px;
+}
+#preset_selector {
+	overflow-x: hidden;
+	overflow-y: scroll;
+	position: relative;
+	height: 370px;
+	border-width: 1px 0px 1px 1px;
+	border-style: solid;
+	border-color: #333;
+}
+#preset_selector a {
+	background-color: #fff;
+	color: #222;
+	text-decoration: none;
+	display: block;
+	width: 180px;
+	height: 150px;
+	position: relative;
+	background-repeat: no-repeat;
+	background-image: url(./slim_select.png);
+}
+#preset_selector>div:nth-child(even) a:not(:hover) {
+	background-color: #eee;
+	color: #222;
+}
+#preset_selector a:hover {
+	background-color: #ccc;
+	color: #00f;
+}
+#preset_selector a div {
+	position: absolute;
+	bottom: 0;
+	width: 100%;
+	line-height: 15px;
+	font-size: 12px;
+	text-align: center;
+}
+.ps-table {
+display: table;
+margin: 0; padding: 0; border-spacing: 0; border: 0;
+border-collapse: collapse;
+}
+.ps-cell {
+display: table-cell;
+vertical-align: middle;
+text-align: left;
+margin: 0; padding: 0; border: 0;
+}
+v\:*, v\:group, v\:shape, v\:path { behavior: url(#default#VML); }
+#vml * {behavior: url(#default#VML); }
+#vml {
+position: relative;
+}
+</style>
+<script type="text/javascript" src="slim.js"></script>
+<script type="text/javascript" src="slim_db.js"></script>
+<script type="text/javascript" src="slim_ui.js"></script>
+</head>
+<body>
+
+
+<div class="slim-main" role="application" aria-labelledby="app_name">
+<h2 id="app_name">Slim (in JavaScript)</h2>
+<noscript>
+JavaScript が有効になっている必要があります。
+</noscript>
+<div class="chararea">
+<div id="svgarea"></div>
+<div id="vmlarea">
+<div class="ps-table"><div id="vmlarea_cell" class="ps-cell">
+</div></div>
+</div>
+<div id="canvasarea">
+<div class="ps-table"><div class="ps-cell">
+<canvas id="canvas">Canvas がサポートされている必要があります。</canvas>
+</div></div>
+</div>
+</div>
+<form action="javascript:void(0)" id="slim_params">
+<div>テキスト: <input type="text" name="text" value="Lorem ipsum"></div>
+<div class="columns-wrapper">
+<div class="column-l" id="preset_selector"></div>
+<table class="column-r">
+<tr>
+<td>水平ステムの太さ<br>
+<input type="range" name="range_weight_y" min="1" max="100" value="50" step="any"><input type="number" name="weight_y" value="50"></td>
+<td rowspan="3"><img src="./controller.png" height="360" width="383" alt=""></td>
+<td>アセンダ<br>
+<input type="range" name="range_ascender" min="400" max="1100" value="700" step="any"><input type="number" name="ascender" value="700"></td>
+</tr>
+<tr>
+<td>垂直ステムの太さ<br>
+<input type="range" name="range_weight_x" min="1" max="200" value="60" step="any"><input type="number" name="weight_x" value="60"></td>
+<td>x-ハイト<br>
+<input type="range" name="range_xHeight" min="200" max="700" value="500" step="any"><input type="number" name="xHeight" value="500"></td>
+</tr>
+<tr>
+<td>垂直ステムの間隔<br>
+<input type="range" name="range_stem_interval" min="30" max="300" value="150" step="any"><input type="number" name="stem_interval" value="150"></td>
+<td>ディセンダ<br>
+<input type="range" name="range_descender" min="50" max="500" value="200" step="any"><input type="number" name="descender" value="200"></td>
+</tr>
+</table>
+</div>
+<input type="hidden" name="topBearing" value="100"><input type="hidden" name="bottomBearing" value="100">
+<div>
+<label><input type="radio" name="reprtype" value="svg" checked>SVG</label>
+<label><input type="radio" name="reprtype" value="canvas">HTML5 Canvas</label>
+<label><input type="radio" name="reprtype" value="vml">VML</label>
+</div><div>
+<label title="変更を即時に反映します。重すぎる場合はチェックを外してください"><input type="checkbox" name="autosubmit" checked>自動プレビュー</label>
+<input type="submit" value="反映">
+</div>
+</form>
+<h3>使い方</h3>
+<ul>
+<li>「テキスト:」欄の内容を変えると表示される文字列が変わります。</li>
+<li>スライダー・入力欄の数値を変えるとフォントのデザインが変わります。（古いブラウザだとスライダーが表示されないかもしれません。）</li>
+<li>左側の一覧からデザインを選ぶと右側の数値が変わります。</li>
+<li>すべての値は相対値です（単位はありません）。自動的に拡大・縮小されます。</li>
+<li>デザイン上の都合により、いくつかの値は他の値によって範囲が制限されます（「垂直ステムの間隔」は常に「垂直ステムの太さ」より大きい、など）。</li>
+<li>ラジオボタンで表示方法を <abbr title="Scalable Vector Graphics">SVG</abbr>・Canvas・<abbr title="Vector Markup Language">VML</abbr> から選ぶことができます。表示されない場合は切り替えることで表示されるかもしれません。（たいていの場合は Canvas モードにすれば表示できるようです。VML モードは古い IE でのみ動作します。）</li>
+<li>表示部の高さはウィンドウの幅によって変化します。画面が横長の場合はウィンドウの幅を狭めて「反映」ボタンをクリックするといいかもしれません。</li>
+<li>デフォルトではテキスト・値の変更は即座に反映されます。重すぎる場合は「自動プレビュー」のチェックを外してみるといいかもしれません（反映するには「反映」ボタンを押します）。</li>
+</ul>
+</div>
+
+<article>
+<h2>Slim について</h2>
+<section>
+<p><a href="https://github.com/kurgm/slim-font#readme">GitHub リポジトリ</a>をご覧ください。</p>
+</section>
+</article>
+</div>
+
+
+</body>
+</html>
