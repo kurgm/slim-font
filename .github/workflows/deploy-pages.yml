@@ -34,10 +34,13 @@ jobs:
         with:
           node-version: 20
           cache: npm
+          cache-dependency-path: ./interactive/package-lock.json
       - name: Install dependencies
         run: npm ci
+        working-directory: ./interactive
       - name: Build
         run: npm run build
+        working-directory: ./interactive
       - name: Setup Pages
         uses: actions/configure-pages@v4
       - name: Upload artifact
