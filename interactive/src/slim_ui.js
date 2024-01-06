@@ -1,4 +1,4 @@
-import { getPathD, getSvg, setValues } from "./slim.js";
+import { getPathD, getSvg, setValues } from "@kurgm/slim-font";
 
 var SlimUIError = function (message) {
 	this.message = message;

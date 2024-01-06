@@ -1,0 +1,6 @@
+{
+  "name": "@kurgm/slim-font",
+  "private": true,
+  "type": "module",
+  "main": "index.js"
+}
