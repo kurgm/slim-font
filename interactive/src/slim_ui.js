@@ -1,4 +1,4 @@
-import * as slim from "./slim.js";
+import { getPathD, getSvg, setValues } from "./slim.js";
 
 var SlimUIError = function (message) {
 	this.message = message;
@@ -29,7 +29,7 @@ var valueskey = [
 	"weight_x", "weight_y", "space_x", "descender", "ascender", "xHeight", "topBearing", "bottomBearing"
 ];
 function drawSvg(str) {
-	var svg = slim.getSvg(str);
+	var svg = getSvg(str);
 	document.getElementById("svgarea").innerHTML = svg;
 	var svgelm = document.getElementById("svg");
 	if (!svgelm || !svgelm.setAttribute) throw new SlimUIError("svg seems unsupported");
@@ -39,7 +39,7 @@ function drawSvg(str) {
 	svgelm.setAttribute("height", max_h);
 }
 function drawVml(str) {
-	var pd = slim.getPathD(str);
+	var pd = getPathD(str);
 	var pathd = pd[0];
 	var buffer = "";
 	var p = function (idx) {
@@ -146,7 +146,7 @@ function drawVml(str) {
 	vmlarea.style.height = max_h + "px";
 }
 function drawCanvas(str) {
-	var pd = slim.getPathD(str);
+	var pd = getPathD(str);
 	var pathd = pd[0];
 	var zoom = 1;
 	var max_w = document.body.clientWidth - 100;
@@ -427,7 +427,7 @@ ael(document, "DOMContentLoaded", function() {
 			}
 			map2[key] = val;
 		}
-		slim.setValues(map2);
+		setValues(map2);
 		document.getElementById("svgarea").style.display = "none";
 		document.getElementById("canvasarea").style.display = "none";
 		document.getElementById("vmlarea").style.display = "none";
