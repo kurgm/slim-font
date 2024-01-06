@@ -1,4 +1,3 @@
-"use strict";
 if (typeof ku6goma === "undefined") globalThis.ku6goma = {};
 if (!ku6goma.slim) ku6goma.slim = {};
 (function (slim) {
@@ -512,3 +511,5 @@ if (!ku6goma.slim) ku6goma.slim = {};
 		return exampleStringSvg(slim.database, string || "");
 	};
 })(ku6goma.slim);
+
+export {};

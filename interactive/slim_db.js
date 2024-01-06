@@ -1,4 +1,3 @@
-"use strict";
 // generated at 2013-11-03T17:29
 if (typeof ku6goma === "undefined") globalThis.ku6goma = {};
 if (!ku6goma.slim) ku6goma.slim = {};
@@ -1157,3 +1156,5 @@ ku6goma.slim.database = {
 "uni1ef4":{"slim":["#uni0059","#uni0323/Combining#0.5"]},
 "uni1ef5":{"slim":["#uni0079","#uni0323/combining#0.5"]}
 }
+
+export {};
