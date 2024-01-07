@@ -120,10 +120,7 @@ function setFormValues() {
 	});
 }
 function limVal(name, lim, isMax) {
-	if (isMax)
-		map[name] = Math.min(map[name], lim);
-	else
-		map[name] = Math.max(map[name], lim);
+	map[name] = isMax ? Math.min(map[name], lim) : Math.max(map[name], lim);
 }
 function limForm(name) {
 	getFormValues();
@@ -156,13 +153,7 @@ const formsubfunc = () => {
 	limForm();
 	const map2 = {};
 	for (const key of valueskey) {
-		let val;
-		if (key === "space_x") {
-			val = map["stem_interval"] - map["weight_x"];
-		} else {
-			val = map[key];
-		}
-		map2[key] = val;
+		map2[key] = key === "space_x" ? map["stem_interval"] - map["weight_x"] : map[key];
 	}
 	setValues(map2);
 	const text = pform.elements["text"].value;

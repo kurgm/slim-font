@@ -126,7 +126,7 @@ function slim2pathd(database, glyphname, dx, dy) {
 	dy = dy || 0.0;
 	const glyphdata = database[glyphname];
 	const slimdata = glyphdata.slim;
-	let slim_d = [];
+	const slim_d = [];
 	let max_w = horipos(-1);
 	for (const slimelem of slimdata) {
 		if (slimelem.charAt(0) === "#") {
@@ -135,22 +135,12 @@ function slim2pathd(database, glyphname, dx, dy) {
 			if (!database[name]) throw new SlimError(`referred glyph was not found: ${name}`);
 			if (name === glyphname) throw new SlimError(`referring itself: ${name}`);
 			const lenparams = params.length;
-			let new_dx;
-			let new_dy;
-			if (lenparams >= 4)
-				new_dy = params[3];
-			else
-				new_dy = "0";
-			if (lenparams >= 3)
-				new_dx = params[2];
-			else
-				new_dx = "0";
-			new_dx = parsePosStr(new_dx, "w");
-			new_dy = parsePosStr(new_dy, "y");
+			const new_dx = parsePosStr(lenparams >= 3 ? params[2] : "0", "w");
+			const new_dy = parsePosStr(lenparams >= 4 ? params[3] : "0", "y");
 			const pd = slim2pathd(database, name, dx + new_dx, dy + new_dy);
 			const new_pathd = pd[0];
 			const new_glyphw = pd[1];
-			slim_d = slim_d.concat(new_pathd);
+			slim_d.push(...new_pathd);
 			max_w = Math.max(max_w, new_glyphw);
 			continue;
 		}
@@ -463,11 +453,7 @@ function slim2svgg(database, glyphname, properties) {
 	const glyph_w = pd[1];
 	const glyphdata = database[glyphname];
 	glyphdata.id = glyphdata.id || glyphname.split("/").join("_");
-	let buffer = "";
-	buffer += `<g id="${glyphdata.id}"${properties}>`;
-	for (const d of slim_d)
-		buffer += `<path d="${d}" />`;
-	buffer += "</g>";
+	const buffer = `<g id="${glyphdata.id}"${properties}>${slim_d.map((d) => `<path d="${d}" />`).join("")}</g>`;
 	return [buffer, glyph_w];
 }
 function getGlyphWidth(database, glyphname, default_, dx) {
@@ -475,44 +461,40 @@ function getGlyphWidth(database, glyphname, default_, dx) {
 	if (/\/[cC]ombining$/.test(glyphname))
 		return 0;
 	const glyphdata = database[glyphname];
-	if ("width" in glyphdata)
-		return parsePosStr(glyphdata.width, "w") + dx;
-	else
+	if (!("width" in glyphdata))
 		return default_;
+	return parsePosStr(glyphdata.width, "w") + dx;
 }
 function char2glyphname(c) {
-	const u = c.codePointAt(0).toString(16).padStart(4, "0");
-	let name = `uni${u}`;
-	if (!slimDatabase[name])
-		name = ".notdef";
-	return name;
+	const name = `uni${c.codePointAt(0).toString(16).padStart(4, "0")}`;
+	return slimDatabase[name] ? name : ".notdef";
 }
 function exampleStringSvg(database, string) {
 	if (typeof string === "undefined") string = "The quick brown fox jumps over the lazy dog.";
-	let buffer = "";
+	const g_elems = [];
 	let svglist_x = 0.0;
 	for (const char of string) {
 		const c = char2glyphname(char);
 		const gg = slim2svgg(database, c, ` transform="translate(${svglist_x},0)"`);
 		const g_elem = gg[0];
 		const glyph_w = gg[1];
-		buffer += g_elem;
+		g_elems.push(g_elem);
 		svglist_x += glyph_w;
 	}
 	const lineHeight = fontsetting.topBearing + fontsetting.ascender + fontsetting.descender + fontsetting.bottomBearing;
-	return `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" viewBox="0 0 ${svglist_x} ${lineHeight}" preserveAspectRatio="xMinYMid meet" id="svg">${buffer}</svg>`;
+	return `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" viewBox="0 0 ${svglist_x} ${lineHeight}" preserveAspectRatio="xMinYMid meet" id="svg">${g_elems.join("")}</svg>`;
 }
 // for canvas
 export const getPathD = (string) => {
 	string = string || "";
-	let pathd = [];
+	const pathd = [];
 	let dx = 0.0;
 	for (const char of string) {
 		const c = char2glyphname(char);
 		const pd = slim2pathd(slimDatabase, c, dx, 0);
 		const slim_d = pd[0];
 		const glyph_w = pd[1];
-		pathd = pathd.concat(slim_d);
+		pathd.push(...slim_d);
 		dx = glyph_w;
 	}
 	const lineHeight = fontsetting.topBearing + fontsetting.ascender + fontsetting.descender + fontsetting.bottomBearing;
