@@ -1,8 +1,4 @@
-export class SlimError {
-	message: string;
-	constructor(message: string);
-	toString(): string;
-}
+export class SlimError extends Error {}
 
 export type FontSetting = {
 	weight_x: number;

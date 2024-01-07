@@ -1,11 +1,8 @@
 import slimDatabase from "./slim_db.js";
 
-export class SlimError {
-	constructor(message) {
-		this.message = message;
-	}
-	toString() {
-		return this.message;
+export class SlimError extends Error {
+	static {
+		this.prototype.name = "SlimError";
 	}
 }
 function copysign (a, b) {

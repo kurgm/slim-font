@@ -1,11 +1,8 @@
 import { getSvg, setValues } from "@kurgm/slim-font";
 
-class SlimUIError {
-	constructor(message) {
-		this.message = message;
-	}
-	toString() {
-		return this.message;
+class SlimUIError extends Error {
+	static {
+		this.prototype.name = "SlimUIError";
 	}
 }
 const valueskey = [
