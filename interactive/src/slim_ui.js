@@ -10,10 +10,6 @@ class SlimUIError extends Error {
 		this.prototype.name = "SlimUIError";
 	}
 }
-/** @type {(keyof FontSetting)[]} */
-const valueskey = [
-	"weight_x", "weight_y", "space_x", "descender", "ascender", "xHeight", "topBearing", "bottomBearing"
-];
 /**
  * @param {string} str
  */
@@ -113,16 +109,16 @@ pform.elements["text"].addEventListener("keyup", anonchgf);
 pform.elements["autosubmit"].addEventListener("change", () => {
 	if (pform.elements["autosubmit"].checked) anonchgf();
 });
-/** @type {InputParam} */
-const map = {};
+/**
+ * @returns {InputParam}
+ */
 function getFormValues() {
-	controlnames.forEach((controlname, i) => {
-		const inp = parseFloat(controls[i].value);
-		if (inp === inp) // not NaN
-			map[controlname] = inp;
-	});
+	return Object.fromEntries(controlnames.map((controlname, i) => [controlname, parseFloat(controls[i].value)]));
 }
-function setFormValues() {
+/**
+ * @param {InputParam} map
+ */
+function setFormValues(map) {
 	controlnames.forEach((controlname, i) => {
 		controls[i].value = map[controlname];
 		if (controlr[i])
@@ -130,29 +126,31 @@ function setFormValues() {
 	});
 }
 /**
+ * @param {InputParam} map
  * @param {keyof InputParam} name
  * @param {number} lim 
  * @param {boolean} [isMax]
  */
-function limVal(name, lim, isMax = false) {
+function limVal(map, name, lim, isMax = false) {
 	map[name] = isMax ? Math.min(map[name], lim) : Math.max(map[name], lim);
 }
 /**
  * @param {keyof InputParam} [name]
  */
 function limForm(name) {
-	getFormValues();
-	if (name) limVal(name, 1);
+	const map = getFormValues();
+	if (name) limVal(map, name, 1);
 	if (name === "stem_interval") {
-		limVal("weight_x", map["stem_interval"], true);
+		limVal(map, "weight_x", map["stem_interval"], true);
 	} else {
-		limVal("stem_interval", map["weight_x"]);
+		limVal(map, "stem_interval", map["weight_x"]);
 	}
 	const ipdifxy = map["stem_interval"] + Math.abs(map["weight_x"] - map["weight_y"]);
-	limVal("xHeight", 2 * ipdifxy + map["weight_y"]);
-	limVal("ascender",    ipdifxy + map["xHeight"]);
-	limVal("descender",   ipdifxy);
-	setFormValues();
+	limVal(map, "xHeight", 2 * ipdifxy + map["weight_y"]);
+	limVal(map, "ascender",    ipdifxy + map["xHeight"]);
+	limVal(map, "descender",   ipdifxy);
+	setFormValues(map);
+	return map;
 }
 /**
  * @param {keyof InputParam} [name]
@@ -174,13 +172,17 @@ function rangechgf_maker(name) {
 	}
 }
 const formsubfunc = () => {
-	limForm();
-	/** @type {FontSetting} */
-	const map2 = {};
-	for (const key of valueskey) {
-		map2[key] = key === "space_x" ? map["stem_interval"] - map["weight_x"] : map[key];
-	}
-	setValues(map2);
+	const map = limForm();
+	setValues({
+		weight_x: map["weight_x"],
+		weight_y: map["weight_y"],
+		space_x: map["stem_interval"] - map["weight_x"],
+		descender: map["descender"],
+		ascender: map["ascender"],
+		xHeight: map["xHeight"],
+		topBearing: map["topBearing"],
+		bottomBearing: map["bottomBearing"]
+	});
 	const text = pform.elements["text"].value;
 	try {
 		drawSvg(text);
@@ -196,10 +198,7 @@ const preset_selector = document.getElementById("preset_selector");
  * @param {InputParam} newmap
  */
 function setMap (newmap) {
-	for (const controlname of controlnames) {
-		map[controlname] = newmap[controlname];
-	}
-	setFormValues();
+	setFormValues(newmap);
 	formsubfunc();
 }
 for (const presetMap of presetMaps) {
