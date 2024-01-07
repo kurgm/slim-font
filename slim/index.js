@@ -8,9 +8,6 @@ export class SlimError {
 		return this.message;
 	}
 }
-function hypot (x, y) {
-	return Math.sqrt(x * x + y * y);
-}
 function copysign (a, b) {
 	return a * b < 0 ? -a : a;
 }
@@ -288,7 +285,7 @@ function slim2pathd(database, glyphname, dx, dy) {
 				if (bel && (p[2] === 2 || rounded === 1)) {
 					const vx = bel.x;
 					const vy = bel.y;
-					const k = 2.0 * hypot(fontsetting.weight_x * vy, fontsetting.weight_y * vx);
+					const k = 2.0 * Math.hypot(fontsetting.weight_x * vy, fontsetting.weight_y * vx);
 					const dx2 = fontsetting.weight_x ** 2 * vy / k;
 					const dy2 = fontsetting.weight_y ** 2 * vx / k;
 					bel.points[1] = [
@@ -303,7 +300,7 @@ function slim2pathd(database, glyphname, dx, dy) {
 				if (afl && (p[3] === 2 || rounded === 1)) {
 					const vx = afl.x;
 					const vy = afl.y;
-					const k = 2.0 * hypot(fontsetting.weight_x * vy, fontsetting.weight_y * vx);
+					const k = 2.0 * Math.hypot(fontsetting.weight_x * vy, fontsetting.weight_y * vx);
 					const dx2 = fontsetting.weight_x ** 2 * vy / k;
 					const dy2 = fontsetting.weight_y ** 2 * vx / k;
 					afl.points[0] = [
@@ -334,7 +331,7 @@ function slim2pathd(database, glyphname, dx, dy) {
 							} else {
 								const vx = bel.x;
 								const vy = bel.y;
-								const d = hypot(fontsetting.weight_x * vy, fontsetting.weight_y * vx) / (2.0 * vy);
+								const d = Math.hypot(fontsetting.weight_x * vy, fontsetting.weight_y * vx) / (2.0 * vy);
 								bel.points[1] = [
 									p[0] + signedY / (2.0 * Math.tan(arg)) - d,
 									p[1] + signedY / 2.0
@@ -367,7 +364,7 @@ function slim2pathd(database, glyphname, dx, dy) {
 							} else {
 								const vx = bel.x;
 								const vy = bel.y;
-								const d = hypot(fontsetting.weight_x * vy, fontsetting.weight_y * vx) / (2.0 * vx);
+								const d = Math.hypot(fontsetting.weight_x * vy, fontsetting.weight_y * vx) / (2.0 * vx);
 								bel.points[1] = [
 									p[0] + signedX / 2.0,
 									p[1] + signedX * Math.tan(arg) / 2.0 + d
@@ -396,7 +393,7 @@ function slim2pathd(database, glyphname, dx, dy) {
 							} else {
 								const vx = afl.x;
 								const vy = afl.y;
-								const d = hypot(fontsetting.weight_x * vy, fontsetting.weight_y * vx) / (2.0 * vy);
+								const d = Math.hypot(fontsetting.weight_x * vy, fontsetting.weight_y * vx) / (2.0 * vy);
 								afl.points[0] = [
 									p[0] + signedY / (2.0 * Math.tan(arg)) - d,
 									p[1] + signedY / 2.0
@@ -429,7 +426,7 @@ function slim2pathd(database, glyphname, dx, dy) {
 							} else {
 								const vx = afl.x;
 								const vy = afl.y;
-								const d = hypot(fontsetting.weight_x * vy, fontsetting.weight_y * vx) / (2.0 * vx);
+								const d = Math.hypot(fontsetting.weight_x * vy, fontsetting.weight_y * vx) / (2.0 * vx);
 								afl.points[0] = [
 									p[0] + signedX / 2.0,
 									p[1] + signedX * Math.tan(arg) / 2.0 + d
