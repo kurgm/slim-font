@@ -61,12 +61,12 @@ function horipos (n) {
 }
 function parsePosStr(str, default_unit) {
 	default_unit = default_unit || "w";
-	if (/^\d/.test(str)) str = "+" + str;
+	if (/^\d/.test(str)) str = `+${str}`;
 	let res = 0.0;
 	const pattern = /^([\+\-][0-9.]+)([xywmW]?)/;
 	for (let i = 0, l = str.length, mobj; i < l; i += mobj[0].length) {
 		mobj = str.substring(i).match(pattern);
-		if (!mobj) throw new SlimError("syntax error in parsing position: " + str);
+		if (!mobj) throw new SlimError(`syntax error in parsing position: ${str}`);
 		res += parseFloat(mobj[1]) * unit_dict[mobj[2] || default_unit];
 	}
 	return res;
@@ -103,7 +103,7 @@ function slimParsepoint(slimpoint, dx, dy) {
 	dx = dx || 0.0;
 	dy = dy || 0.0;
 	const mobj = slimpoint.match(/^([srb]{0,2})([tbxdmgfyMTB])([^,]*),([^,]+)$/);
-	if (!mobj) throw new SlimError("syntax error: " + slimpoint);
+	if (!mobj) throw new SlimError(`syntax error: ${slimpoint}`);
 	const typ = mobj[1];
 	const typlen = typ.length;
 	let bety;
@@ -115,7 +115,7 @@ function slimParsepoint(slimpoint, dx, dy) {
 	else
 		bety = typdic[typ[0]], afty = typdic[typ[1]];
 	return [
-		parsePosStr(mobj[4] + "+0.5w", "w") + dx,
+		parsePosStr(`${mobj[4]}+0.5w`, "w") + dx,
 		vertpos[mobj[2]] + parsePosStr(mobj[3], "y") + dy,
 		bety,
 		afty
@@ -133,8 +133,8 @@ function slim2pathd(database, glyphname, dx, dy) {
 		if (slimelem.charAt(0) === "#") {
 			const params = slimelem.split("#");
 			const name = params[1];
-			if (!database[name]) throw new SlimError("referred glyph was not found: " + name);
-			if (name === glyphname) throw new SlimError("referring itself: " + name);
+			if (!database[name]) throw new SlimError(`referred glyph was not found: ${name}`);
+			if (name === glyphname) throw new SlimError(`referring itself: ${name}`);
 			const lenparams = params.length;
 			let new_dx;
 			let new_dy;
@@ -453,7 +453,7 @@ function slim2pathd(database, glyphname, dx, dy) {
 		for (let j = 0, jl = line.length; j < jl; j++) {
 			let lstr = "M ";
 			for (let k = 0, kl = line[j].points.length; k < kl; k++)
-				lstr += line[j].points[k].join(",") + " ";
+				lstr += `${line[j].points[k].join(",")} `;
 			lstr += "z";
 			slim_d.push(lstr);
 		}
@@ -468,9 +468,9 @@ function slim2svgg(database, glyphname, properties) {
 	const glyphdata = database[glyphname];
 	glyphdata.id = glyphdata.id || glyphname.split("/").join("_");
 	let buffer = "";
-	buffer += '<g id="' + glyphdata.id + '"' + properties + '>';
+	buffer += `<g id="${glyphdata.id}"${properties}>`;
 	for (let i = 0, l = slim_d.length; i < l; i++)
-		buffer += '<path d="' + slim_d[i] + '" />';
+		buffer += `<path d="${slim_d[i]}" />`;
 	buffer += "</g>";
 	return [buffer, glyph_w];
 }
@@ -487,8 +487,8 @@ function getGlyphWidth(database, glyphname, default_, dx) {
 function char2glyphname(c) {
 	let u = c.charCodeAt(0).toString(16);
 	while (u.length < 4)
-		u = "0" + u;
-	let name = "uni" + u;
+		u = `0${u}`;
+	let name = `uni${u}`;
 	if (!slimDatabase[name])
 		name = ".notdef";
 	return name;
@@ -499,15 +499,14 @@ function exampleStringSvg(database, string) {
 	let svglist_x = 0.0;
 	for (let i = 0, l = string.length; i < l; i++) {
 		const c = char2glyphname(string.charAt(i));
-		const gg = slim2svgg(database, c, ' transform="translate(' + svglist_x + ',0)"');
+		const gg = slim2svgg(database, c, ` transform="translate(${svglist_x},0)"`);
 		const g_elem = gg[0];
 		const glyph_w = gg[1];
 		buffer += g_elem;
 		svglist_x += glyph_w;
 	}
 	const lineHeight = fontsetting.topBearing + fontsetting.ascender + fontsetting.descender + fontsetting.bottomBearing;
-	return '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" viewBox="0 0 ' + 
-	svglist_x + ' ' + lineHeight + '" preserveAspectRatio="xMinYMid meet" id="svg">' + buffer + '</svg>';
+	return `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" viewBox="0 0 ${svglist_x} ${lineHeight}" preserveAspectRatio="xMinYMid meet" id="svg">${buffer}</svg>`;
 }
 // for canvas
 export const getPathD = (string) => {

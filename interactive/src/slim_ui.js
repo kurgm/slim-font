@@ -94,7 +94,7 @@ const controlf = {};
 const anonchgf = controlchgf_maker();
 for (let i = 0, l = controlnames.length; i < l; i++) {
 	controls[i] = pform.elements[controlnames[i]];
-	controlr[i] = pform.elements["range_" + controlnames[i]];
+	controlr[i] = pform.elements[`range_${controlnames[i]}`];
 	const f = controlf[controlnames[i]] = controlchgf_maker(controlnames[i]);
 	controls[i].addEventListener("change", f);
 	if (controlr[i])
@@ -148,7 +148,7 @@ function controlchgf_maker(name) {
 }
 function rangechgf_maker(name) {
 	return () => {
-		pform.elements[name].value = pform.elements["range_" + name].value;
+		pform.elements[name].value = pform.elements[`range_${name}`].value;
 		controlf[name]();
 	}
 }
@@ -194,7 +194,7 @@ for(let i = 0, l = presetMaps.length; i < l; i++) {
 	a.addEventListener("click", () => {
 		setMap(presetMaps[i][1]);
 	});
-	a.style.backgroundPosition = (-presetMaps[i][2][0]) + "px " + (-presetMaps[i][2][1]) + "px";
+	a.style.backgroundPosition = `${-presetMaps[i][2][0]}px ${-presetMaps[i][2][1]}px`;
 	div.appendChild(a);
 	preset_selector.appendChild(div);
 }
