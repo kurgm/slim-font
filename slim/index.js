@@ -1,18 +1,20 @@
 import slimDatabase from "./slim_db.js";
 
-export const SlimError = function (message) {
-	this.message = message;
-};
-SlimError.prototype.toString = function () {
-	return this.message;
-};
+export class SlimError {
+	constructor(message) {
+		this.message = message;
+	}
+	toString() {
+		return this.message;
+	}
+}
 function hypot (x, y) {
 	return Math.sqrt(x * x + y * y);
 }
 function copysign (a, b) {
 	return a * b < 0 ? -a : a;
 }
-var fontsetting = {
+const fontsetting = {
 	weight_x: 60.0,
 	weight_y: 50.0,
 	space_x: 90.0,
@@ -22,17 +24,18 @@ var fontsetting = {
 	topBearing: 100.0,
 	bottomBearing: 100.0
 };
-var vertpos = {
+let vertpos = {
 };
-var unit_dict = {
+let unit_dict = {
 };
-var radius_inner, radius_outer;
-export const setValues = function (map) {
-	for(var i in map) fontsetting[i] = map[i];
+let radius_inner;
+let radius_outer;
+export const setValues = (map) => {
+	for(const i in map) fontsetting[i] = map[i];
 	initValues();
 };
 function initValues() {
-	var m = fontsetting;
+	const m = fontsetting;
 	vertpos = {
 		"t": m.topBearing + m.weight_y / 2.0,
 		"b": m.topBearing + m.ascender - m.weight_y / 2.0,
@@ -62,17 +65,17 @@ function horipos (n) {
 function parsePosStr(str, default_unit) {
 	default_unit = default_unit || "w";
 	if (/^\d/.test(str)) str = "+" + str;
-	var res = 0.0,
-	    pattern = /^([\+\-][0-9.]+)([xywmW]?)/;
-	for (var i = 0, l = str.length; i < l; i += mobj[0].length) {
-		var mobj = str.substring(i).match(pattern);
+	let res = 0.0;
+	const pattern = /^([\+\-][0-9.]+)([xywmW]?)/;
+	for (let i = 0, l = str.length, mobj; i < l; i += mobj[0].length) {
+		mobj = str.substring(i).match(pattern);
 		if (!mobj) throw new SlimError("syntax error in parsing position: " + str);
 		res += parseFloat(mobj[1]) * unit_dict[mobj[2] || default_unit];
 	}
 	return res;
 }
 function pathCorner(xScale, yScale, x, y) {
-	var isnotinv = xScale * yScale > 0;
+	const isnotinv = xScale * yScale > 0;
 	return [
 		"M",
 		xScale * (- fontsetting.weight_x / 2.0) + x,
@@ -94,7 +97,7 @@ function pathCorner(xScale, yScale, x, y) {
 		"z"
 	].join(" ");
 }
-var typdic = {
+const typdic = {
 	"s": 0,
 	"r": 1,
 	"b": 2
@@ -102,11 +105,12 @@ var typdic = {
 function slimParsepoint(slimpoint, dx, dy) {
 	dx = dx || 0.0;
 	dy = dy || 0.0;
-	var mobj = slimpoint.match(/^([srb]{0,2})([tbxdmgfyMTB])([^,]*),([^,]+)$/);
+	const mobj = slimpoint.match(/^([srb]{0,2})([tbxdmgfyMTB])([^,]*),([^,]+)$/);
 	if (!mobj) throw new SlimError("syntax error: " + slimpoint);
-	var typ = mobj[1];
-	var typlen = typ.length;
-	var bety, afty;
+	const typ = mobj[1];
+	const typlen = typ.length;
+	let bety;
+	let afty;
 	if (typlen === 0)
 		bety = afty = 0;
 	else if (typlen === 1)
@@ -123,54 +127,58 @@ function slimParsepoint(slimpoint, dx, dy) {
 function slim2pathd(database, glyphname, dx, dy) {
 	dx = dx || 0.0;
 	dy = dy || 0.0;
-	var glyphdata = database[glyphname];
-	var slimdata = glyphdata.slim;
-	var slim_d = [];
-	var max_w = horipos(-1);
-	for (var i = 0, l = slimdata.length; i < l; i++) {
-		var slimelem = slimdata[i];
+	const glyphdata = database[glyphname];
+	const slimdata = glyphdata.slim;
+	let slim_d = [];
+	let max_w = horipos(-1);
+	for (let i = 0, l = slimdata.length; i < l; i++) {
+		const slimelem = slimdata[i];
 		if (slimelem.charAt(0) === "#") {
-			var params = slimelem.split("#");
-			var name = params[1];
+			const params = slimelem.split("#");
+			const name = params[1];
 			if (!database[name]) throw new SlimError("referred glyph was not found: " + name);
 			if (name === glyphname) throw new SlimError("referring itself: " + name);
-			var lenparams = params.length;
+			const lenparams = params.length;
+			let new_dx;
+			let new_dy;
 			if (lenparams >= 4)
-				var new_dy = params[3];
+				new_dy = params[3];
 			else
-				var new_dy = "0";
+				new_dy = "0";
 			if (lenparams >= 3)
-				var new_dx = params[2];
+				new_dx = params[2];
 			else
-				var new_dx = "0";
+				new_dx = "0";
 			new_dx = parsePosStr(new_dx, "w");
 			new_dy = parsePosStr(new_dy, "y");
-			var pd = slim2pathd(database, name, dx + new_dx, dy + new_dy);
-			var new_pathd = pd[0], new_glyphw = pd[1];
+			const pd = slim2pathd(database, name, dx + new_dx, dy + new_dy);
+			const new_pathd = pd[0];
+			const new_glyphw = pd[1];
 			slim_d = slim_d.concat(new_pathd);
 			max_w = Math.max(max_w, new_glyphw);
 			continue;
 		}
-		var slimpoints = slimelem.split(/\s+/);
-		var pointc = slimpoints.length;
-		for (var j = 0; j < pointc; j++) {
-			var slimpoint = slimParsepoint(slimpoints[j], dx, dy);
+		const slimpoints = slimelem.split(/\s+/);
+		const pointc = slimpoints.length;
+		for (let j = 0; j < pointc; j++) {
+			const slimpoint = slimParsepoint(slimpoints[j], dx, dy);
 			max_w = Math.max(max_w, slimpoint[0] + (fontsetting.weight_x + fontsetting.space_x) / 2.0);
 			slimpoints[j] = slimpoint;
 		}
-		var line = [];
-		for (var j = 0; j < pointc - 1; j++) {
-			var point1 = slimpoints[j],
-			    point2 = slimpoints[j + 1];
-			var arg = Math.atan2(point2[1] - point1[1], point2[0] - point1[0]),
-			    arg2 = Math.abs(arg / Math.PI),
-			    isvert = (0.25 < arg2) && (arg2 < 0.75);
+		const line = [];
+		for (let j = 0; j < pointc - 1; j++) {
+			const point1 = slimpoints[j];
+			const point2 = slimpoints[j + 1];
+			const arg = Math.atan2(point2[1] - point1[1], point2[0] - point1[0]);
+			const arg2 = Math.abs(arg / Math.PI);
+			const isvert = (0.25 < arg2) && (arg2 < 0.75);
+			let hv;
 			if (arg2 === 0.5)
-				var hv = 1; //vert
+				hv = 1; //vert
 			else if (arg2 === 0.0 || arg2 === 1.0)
-				var hv = 2; //hori
+				hv = 2; //hori
 			else
-				var hv = 0;
+				hv = 0;
 			line.push({
 				"x": point2[0] - point1[0],
 				"y": point2[1] - point1[1],
@@ -180,15 +188,16 @@ function slim2pathd(database, glyphname, dx, dy) {
 				"points": [[], [], [], []]
 			});
 		}
-		for (var j = 0; j < pointc; j++) {
-			var p = slimpoints[j];
-			var bel = j !== 0          ? line[j - 1] : null,
-			    afl = j !== pointc - 1 ? line[j]     : null;
-			var rounded = 0;
+		for (let j = 0; j < pointc; j++) {
+			const p = slimpoints[j];
+			const bel = j !== 0          ? line[j - 1] : null;
+			const afl = j !== pointc - 1 ? line[j]     : null;
+			let rounded = 0;
+			let hv1;
 			if (p[2] === 1 && p[3] === 1) {
 				if (bel && afl) {
-					var hv1 = bel.hv,
-					    hv2 = afl.hv;
+					hv1 = bel.hv;
+					const hv2 = afl.hv;
 					if (hv1 && hv2) {
 						if (hv1 !== hv2)
 							rounded = 2; //corner
@@ -204,9 +213,10 @@ function slim2pathd(database, glyphname, dx, dy) {
 				rounded = 0;
 			if (rounded === 2) {
 				//corner
-				var arg1 = bel.arg / Math.PI,
-				    arg2 = afl.arg / Math.PI;
-				var xs, ys;
+				const arg1 = bel.arg / Math.PI;
+				const arg2 = afl.arg / Math.PI;
+				let xs;
+				let ys;
 				if      ((arg1 === -0.5 && arg2 === 0.0) || (arg1 === 1.0 && arg2 ===  0.5))
 					// left-top corner
 					xs =  1, ys =  1;
@@ -220,16 +230,19 @@ function slim2pathd(database, glyphname, dx, dy) {
 					// left-bottom corner
 					xs =  1, ys = -1;
 				slim_d.push(pathCorner(xs, ys, p[0], p[1]));
-				var vert_outer = [
+				const vert_outer = [
 					xs * (- fontsetting.weight_x / 2.0) + p[0],
 					ys * (radius_outer - fontsetting.weight_y / 2.0) + p[1]
-				],  vert_inner = [
+				];
+				const vert_inner = [
 					xs * (  fontsetting.weight_x / 2.0) + p[0],
 					ys * (radius_inner + fontsetting.weight_y / 2.0) + p[1]
-				],  hori_outer = [
+				];
+				const hori_outer = [
 					xs * (radius_outer - fontsetting.weight_x / 2.0) + p[0],
 					ys * (- fontsetting.weight_y / 2.0) + p[1]
-				],  hori_inner = [
+				];
+				const hori_inner = [
 					xs * (radius_outer - fontsetting.weight_x / 2.0) + p[0],
 					ys * (  fontsetting.weight_y / 2.0) + p[1]
 				];
@@ -273,10 +286,11 @@ function slim2pathd(database, glyphname, dx, dy) {
 						"z"
 					].join(" "));
 				if (bel && (p[2] === 2 || rounded === 1)) {
-					var vx = bel.x, vy = bel.y;
-					var k = 2.0 * hypot(fontsetting.weight_x * vy, fontsetting.weight_y * vx);
-					var dx2 = Math.pow(fontsetting.weight_x, 2) * vy / k,
-					    dy2 = Math.pow(fontsetting.weight_y, 2) * vx / k;
+					const vx = bel.x;
+					const vy = bel.y;
+					const k = 2.0 * hypot(fontsetting.weight_x * vy, fontsetting.weight_y * vx);
+					const dx2 = fontsetting.weight_x ** 2 * vy / k;
+					const dy2 = fontsetting.weight_y ** 2 * vx / k;
 					bel.points[1] = [
 						p[0] - dx2,
 						p[1] + dy2
@@ -287,10 +301,11 @@ function slim2pathd(database, glyphname, dx, dy) {
 					];
 				}
 				if (afl && (p[3] === 2 || rounded === 1)) {
-					var vx = afl.x, vy = afl.y;
-					var k = 2.0 * hypot(fontsetting.weight_x * vy, fontsetting.weight_y * vx);
-					var dx2 = Math.pow(fontsetting.weight_x, 2) * vy / k,
-					    dy2 = Math.pow(fontsetting.weight_y, 2) * vx / k;
+					const vx = afl.x;
+					const vy = afl.y;
+					const k = 2.0 * hypot(fontsetting.weight_x * vy, fontsetting.weight_y * vx);
+					const dx2 = fontsetting.weight_x ** 2 * vy / k;
+					const dy2 = fontsetting.weight_y ** 2 * vx / k;
 					afl.points[0] = [
 						p[0] - dx2,
 						p[1] + dy2
@@ -303,10 +318,10 @@ function slim2pathd(database, glyphname, dx, dy) {
 				if (rounded === 0) {
 					//not rounded
 					if (bel && p[2] === 0) {
-						var arg = bel.arg;
+						const arg = bel.arg;
 						if (bel.isvert) {
-							var signedX = copysign(fontsetting.weight_x, arg),
-							    signedY = copysign(fontsetting.weight_y, arg);
+							const signedX = copysign(fontsetting.weight_x, arg);
+							const signedY = copysign(fontsetting.weight_y, arg);
 							if (bel.hv) {
 								bel.points[1] = [
 									p[0] - signedX / 2.0,
@@ -317,8 +332,9 @@ function slim2pathd(database, glyphname, dx, dy) {
 									p[1] + signedY / 2.0
 								];
 							} else {
-								var vx = bel.x, vy = bel.y;
-								var d = hypot(fontsetting.weight_x * vy, fontsetting.weight_y * vx) / (2.0 * vy);
+								const vx = bel.x;
+								const vy = bel.y;
+								const d = hypot(fontsetting.weight_x * vy, fontsetting.weight_y * vx) / (2.0 * vy);
 								bel.points[1] = [
 									p[0] + signedY / (2.0 * Math.tan(arg)) - d,
 									p[1] + signedY / 2.0
@@ -329,7 +345,8 @@ function slim2pathd(database, glyphname, dx, dy) {
 								];
 							}
 						} else {
-							var signedX, signedY;
+							let signedX;
+							let signedY;
 							if (Math.abs(arg / Math.PI) > 0.5)
 								// leftwards
 								signedX = -fontsetting.weight_x,
@@ -348,8 +365,9 @@ function slim2pathd(database, glyphname, dx, dy) {
 									p[1] - signedY / 2.0
 								];
 							} else {
-								var vx = bel.x, vy = bel.y;
-								var d = hypot(fontsetting.weight_x * vy, fontsetting.weight_y * vx) / (2.0 * vx);
+								const vx = bel.x;
+								const vy = bel.y;
+								const d = hypot(fontsetting.weight_x * vy, fontsetting.weight_y * vx) / (2.0 * vx);
 								bel.points[1] = [
 									p[0] + signedX / 2.0,
 									p[1] + signedX * Math.tan(arg) / 2.0 + d
@@ -362,10 +380,10 @@ function slim2pathd(database, glyphname, dx, dy) {
 						}
 					}
 					if (afl && p[3] === 0) {
-						var arg = afl.arg;
+						const arg = afl.arg;
 						if (afl.isvert) {
-							var signedX = -copysign(fontsetting.weight_x, arg),
-							    signedY = -copysign(fontsetting.weight_y, arg);
+							const signedX = -copysign(fontsetting.weight_x, arg);
+							const signedY = -copysign(fontsetting.weight_y, arg);
 							if (afl.hv) {
 								afl.points[0] = [
 									p[0] + signedX / 2.0,
@@ -376,8 +394,9 @@ function slim2pathd(database, glyphname, dx, dy) {
 									p[1] + signedY / 2.0
 								];
 							} else {
-								var vx = afl.x, vy = afl.y;
-								var d = hypot(fontsetting.weight_x * vy, fontsetting.weight_y * vx) / (2.0 * vy);
+								const vx = afl.x;
+								const vy = afl.y;
+								const d = hypot(fontsetting.weight_x * vy, fontsetting.weight_y * vx) / (2.0 * vy);
 								afl.points[0] = [
 									p[0] + signedY / (2.0 * Math.tan(arg)) - d,
 									p[1] + signedY / 2.0
@@ -388,7 +407,8 @@ function slim2pathd(database, glyphname, dx, dy) {
 								];
 							}
 						} else {
-							var signedX, signedY;
+							let signedX;
+							let signedY;
 							if (Math.abs(arg / Math.PI) > 0.5)
 								// leftwards
 								signedX =  fontsetting.weight_x,
@@ -407,8 +427,9 @@ function slim2pathd(database, glyphname, dx, dy) {
 									p[1] + signedY / 2.0
 								];
 							} else {
-								var vx = afl.x, vy = afl.y;
-								var d = hypot(fontsetting.weight_x * vy, fontsetting.weight_y * vx) / (2.0 * vx);
+								const vx = afl.x;
+								const vy = afl.y;
+								const d = hypot(fontsetting.weight_x * vy, fontsetting.weight_y * vx) / (2.0 * vx);
 								afl.points[0] = [
 									p[0] + signedX / 2.0,
 									p[1] + signedX * Math.tan(arg) / 2.0 + d
@@ -432,9 +453,9 @@ function slim2pathd(database, glyphname, dx, dy) {
 				}
 			}
 		}
-		for (var j = 0, jl = line.length; j < jl; j++) {
-			var lstr = "M ";
-			for (var k = 0, kl = line[j].points.length; k < kl; k++)
+		for (let j = 0, jl = line.length; j < jl; j++) {
+			let lstr = "M ";
+			for (let k = 0, kl = line[j].points.length; k < kl; k++)
 				lstr += line[j].points[k].join(",") + " ";
 			lstr += "z";
 			slim_d.push(lstr);
@@ -444,13 +465,14 @@ function slim2pathd(database, glyphname, dx, dy) {
 }
 function slim2svgg(database, glyphname, properties) {
 	properties = properties || "";
-	var pd = slim2pathd(database, glyphname);
-	var slim_d = pd[0], glyph_w = pd[1];
-	var glyphdata = database[glyphname];
+	const pd = slim2pathd(database, glyphname);
+	const slim_d = pd[0];
+	const glyph_w = pd[1];
+	const glyphdata = database[glyphname];
 	glyphdata.id = glyphdata.id || glyphname.split("/").join("_");
-	var buffer = "";
+	let buffer = "";
 	buffer += '<g id="' + glyphdata.id + '"' + properties + '>';
-	for (var i = 0, l = slim_d.length; i < l; i++)
+	for (let i = 0, l = slim_d.length; i < l; i++)
 		buffer += '<path d="' + slim_d[i] + '" />';
 	buffer += "</g>";
 	return [buffer, glyph_w];
@@ -459,52 +481,51 @@ function getGlyphWidth(database, glyphname, default_, dx) {
 	dx = dx || 0.0;
 	if (/\/[cC]ombining$/.test(glyphname))
 		return 0;
-	var glyphdata = database[glyphname];
+	const glyphdata = database[glyphname];
 	if ("width" in glyphdata)
 		return parsePosStr(glyphdata.width, "w") + dx;
 	else
 		return default_;
 }
 function char2glyphname(c) {
-	var u = c.charCodeAt(0).toString(16);
+	let u = c.charCodeAt(0).toString(16);
 	while (u.length < 4)
 		u = "0" + u;
-	var name = "uni" + u;
+	let name = "uni" + u;
 	if (!slimDatabase[name])
 		name = ".notdef";
 	return name;
 }
 function exampleStringSvg(database, string) {
 	if (typeof string === "undefined") string = "The quick brown fox jumps over the lazy dog.";
-	var buffer = "";
-	var svglist_x = 0.0;
-	for (var i = 0, l = string.length; i < l; i++) {
-		var c = char2glyphname(string.charAt(i));
-		var glyphdata = database[c];
-		var gg = slim2svgg(database, c, ' transform="translate(' + svglist_x + ',0)"');
-		var g_elem = gg[0], glyph_w = gg[1];
+	let buffer = "";
+	let svglist_x = 0.0;
+	for (let i = 0, l = string.length; i < l; i++) {
+		const c = char2glyphname(string.charAt(i));
+		const gg = slim2svgg(database, c, ' transform="translate(' + svglist_x + ',0)"');
+		const g_elem = gg[0];
+		const glyph_w = gg[1];
 		buffer += g_elem;
 		svglist_x += glyph_w;
 	}
-	var lineHeight = fontsetting.topBearing + fontsetting.ascender + fontsetting.descender + fontsetting.bottomBearing;
+	const lineHeight = fontsetting.topBearing + fontsetting.ascender + fontsetting.descender + fontsetting.bottomBearing;
 	return '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" viewBox="0 0 ' + 
 	svglist_x + ' ' + lineHeight + '" preserveAspectRatio="xMinYMid meet" id="svg">' + buffer + '</svg>';
 }
 // for canvas
-export const getPathD = function(string) {
+export const getPathD = (string) => {
 	string = string || "";
-	var pathd = [];
-	var dx = 0.0;
-	for (var i = 0, l = string.length; i < l; i++) {
-		var c = char2glyphname(string.charAt(i));
-		var pd = slim2pathd(slimDatabase, c, dx, 0);
-		var slim_d = pd[0], glyph_w = pd[1];
+	let pathd = [];
+	let dx = 0.0;
+	for (let i = 0, l = string.length; i < l; i++) {
+		const c = char2glyphname(string.charAt(i));
+		const pd = slim2pathd(slimDatabase, c, dx, 0);
+		const slim_d = pd[0];
+		const glyph_w = pd[1];
 		pathd = pathd.concat(slim_d);
 		dx = glyph_w;
 	}
-	var lineHeight = fontsetting.topBearing + fontsetting.ascender + fontsetting.descender + fontsetting.bottomBearing;
+	const lineHeight = fontsetting.topBearing + fontsetting.ascender + fontsetting.descender + fontsetting.bottomBearing;
 	return [pathd, dx, lineHeight];
 };
-export const getSvg = function(string) {
-	return exampleStringSvg(slimDatabase, string || "");
-};
+export const getSvg = (string) => exampleStringSvg(slimDatabase, string || "");

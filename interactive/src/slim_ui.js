@@ -1,66 +1,68 @@
 import { getPathD, getSvg, setValues } from "@kurgm/slim-font";
 
-var SlimUIError = function (message) {
-	this.message = message;
-};
-SlimUIError.prototype.toString = function () {
-	return this.message;
-};
-var ael = function(obj, evt, func) {
+class SlimUIError {
+	constructor(message) {
+		this.message = message;
+	}
+	toString() {
+		return this.message;
+	}
+}
+const ael = (obj, evt, func) => {
 	if(obj.addEventListener) return obj.addEventListener(evt, func, false);
 	if(obj.attachEvent)
 		return (evt === "DOMContentLoaded") ?
-			obj.attachEvent("onreadystatechange", function(e) {
+			obj.attachEvent("onreadystatechange", (e) => {
 				if(obj.readyState === "complete") func(e);
 			}) :
 			obj.attachEvent("on" + evt, func);
-	var o = obj[evt];
-	obj[evt] = o ? function(e) {o(e); func(e);} : func;
+	const o = obj[evt];
+	obj[evt] = o ? (e) => {o(e); func(e);} : func;
 };
-var getRadioVal = function(nodelist) {
-	for(var i = 0, l = nodelist.length; i < l; i++) {
+const getRadioVal = (nodelist) => {
+	for(let i = 0, l = nodelist.length; i < l; i++) {
 		if (nodelist[i].checked) {
 			return nodelist[i].value;
 		}
 	}
 	return null;
-}
-var valueskey = [
+};
+const valueskey = [
 	"weight_x", "weight_y", "space_x", "descender", "ascender", "xHeight", "topBearing", "bottomBearing"
 ];
 function drawSvg(str) {
-	var svg = getSvg(str);
+	const svg = getSvg(str);
 	document.getElementById("svgarea").innerHTML = svg;
-	var svgelm = document.getElementById("svg");
+	const svgelm = document.getElementById("svg");
 	if (!svgelm || !svgelm.setAttribute) throw new SlimUIError("svg seems unsupported");
-	var max_w = document.body.clientWidth - 100;
-	var max_h = max_w * 0.25;
+	const max_w = document.body.clientWidth - 100;
+	const max_h = max_w * 0.25;
 	svgelm.setAttribute("width", max_w);
 	svgelm.setAttribute("height", max_h);
 }
 function drawVml(str) {
-	var pd = getPathD(str);
-	var pathd = pd[0];
-	var buffer = "";
-	var p = function (idx) {
-		return Math.round(parseFloat(path[j + idx]));
-	};
-	var max_w = document.body.clientWidth - 100;
-	var max_h = max_w * 0.25;
+	const pd = getPathD(str);
+	const pathd = pd[0];
+	let buffer = "";
+	const max_w = document.body.clientWidth - 100;
+	const max_h = max_w * 0.25;
+	let real_w;
+	let real_h;
 	if (max_w / max_h > pd[1] / pd[2]) {
-		var real_h = max_h,
-		    real_w = max_h * pd[1] / pd[2];
+		real_h = max_h;
+		real_w = max_h * pd[1] / pd[2];
 	} else {
-		var real_h = max_w * pd[2] / pd[1],
-		    real_w = max_w;
+		real_h = max_w * pd[2] / pd[1];
+		real_w = max_w;
 	}
 	buffer += '<v:group id="vml" coordorigin="0 0" coordsize="' + pd[1] + ' ' + pd[2] + '"' + ' style="width:' + real_w + 'px;height:' + real_h + 'px">';
-	for(var i = 0, l = pathd.length; i < l; i++){
+	for(let i = 0, l = pathd.length; i < l; i++){
 		buffer += '<v:shape stroke="false" fill="true" fillcolor="#000000" style="width:' + pd[1] + ';height:' + pd[2] + '" path="';
-		var path = pathd[i].split(/[ ,]/);
-		var cur = [0, 0];
-		var mode = path[0];
-		for (var j = 0, jl = path.length, clen; j < jl; j += clen) {
+		const path = pathd[i].split(/[ ,]/);
+		const cur = [0, 0];
+		let mode = path[0];
+		for (let j = 0, jl = path.length, clen; j < jl; j += clen) {
+			const p = (idx) => Math.round(parseFloat(path[j + idx]));
 			if (path[j].match(/^[MLAZ]$/i)) {
 				mode = path[j];
 				j++;
@@ -84,8 +86,9 @@ function drawVml(str) {
 					buffer += ["l", cur[0] + p(0), cur[1] + p(1)].join(" ");
 					clen = 2;
 					break;
-				case "A":
-					var rx = p(0), ry = p(1);
+				case "A": {
+					const rx = p(0);
+					const ry = p(1);
 					if (rx === ry && rx === Math.abs(p(5) - cur[1])) {
 						if ((p(5) - cur[0] + p(6) - cur[1] === 0) ^ (path[j + 4] === "1")) {
 							buffer += ["qx", p(5), p(6)].join(" ");
@@ -100,8 +103,10 @@ function drawVml(str) {
 						clen = 14;
 					}
 					break;
-				case "a":
-					var rx = p(0), ry = p(1);
+				}
+				case "a": {
+					const rx = p(0);
+					const ry = p(1);
 					if (rx === ry && rx === Math.abs(p(5))) {
 						if ((p(5) + p(6) === 0) ^ (path[j + 4] === "1")) {
 							buffer += ["qx", cur[0] + p(5), cur[1] + p(6)].join(" ");
@@ -116,6 +121,7 @@ function drawVml(str) {
 						clen = 14;
 					}
 					break;
+				}
 				case "Z":
 				case "z":
 					buffer += "x";
@@ -138,7 +144,7 @@ function drawVml(str) {
 		buffer += '" />';
 	}
 	buffer += "</v:group>";
-	var vmlarea = document.getElementById("vmlarea_cell");
+	const vmlarea = document.getElementById("vmlarea_cell");
 	while (vmlarea.firstChild) {
 		vmlarea.removeChild(vmlarea.firstChild);
 	}
@@ -146,33 +152,32 @@ function drawVml(str) {
 	vmlarea.style.height = max_h + "px";
 }
 function drawCanvas(str) {
-	var pd = getPathD(str);
-	var pathd = pd[0];
-	var zoom = 1;
-	var max_w = document.body.clientWidth - 100;
-	var max_h = max_w * 0.25;
+	const pd = getPathD(str);
+	const pathd = pd[0];
+	let zoom = 1;
+	const max_w = document.body.clientWidth - 100;
+	const max_h = max_w * 0.25;
 	if (max_w / max_h > pd[1] / pd[2]) {
 		zoom = max_h / pd[2];
 	} else {
 		zoom = max_w / pd[1];
 	}
-	var canvas = document.getElementById("canvas");
+	const canvas = document.getElementById("canvas");
 	if (!canvas || !canvas.getContext) throw new SlimUIError("canvas seems unsupported");
-	var real_w = pd[1] * zoom, real_h = pd[2] * zoom
+	const real_w = pd[1] * zoom;
+	const real_h = pd[2] * zoom;
 	canvas.width = real_w, canvas.height = real_h;
 	canvas.parentNode.style.height = max_h + "px";
-	var ctx = canvas.getContext("2d");
+	const ctx = canvas.getContext("2d");
 	if (!ctx) throw new SlimUIError("canvas seems unsupported");
 	ctx.fillStyle = "#000000";
-	var p = function (idx) {
-		return parseFloat(path[j + idx]) * zoom;
-	};
-	for(var i = 0, l = pathd.length; i < l; i++){
-		var path = pathd[i].split(/[ ,]/);
-		var cur = [0, 0];
-		var mode = path[0];
+	for(let i = 0, l = pathd.length; i < l; i++){
+		const path = pathd[i].split(/[ ,]/);
+		const cur = [0, 0];
+		let mode = path[0];
 		ctx.beginPath();
-		for (var j = 0, jl = path.length, clen; j < jl; j += clen) {
+		for (let j = 0, jl = path.length, clen; j < jl; j += clen) {
+			const p = (idx) => parseFloat(path[j + idx]) * zoom;
 			if (path[j].match(/^[MLAZ]$/i)) {
 				mode = path[j];
 				j++;
@@ -196,8 +201,9 @@ function drawCanvas(str) {
 					ctx.lineTo(cur[0] + p(0), cur[1] + p(1));
 					clen = 2;
 					break;
-				case "A":
-					var rx = p(0), ry = p(1);
+				case "A": {
+					const rx = p(0);
+					const ry = p(1);
 					if (rx === ry && rx === Math.abs(p(5) - cur[1])) {
 						clen = 7;
 						if (rx === 0) break;
@@ -226,8 +232,10 @@ function drawCanvas(str) {
 						cur[1] = p(6);
 					}
 					break;
-				case "a":
-					var rx = p(0), ry = p(1);
+				}
+				case "a": {
+					const rx = p(0);
+					const ry = p(1);
 					if (rx === ry && rx === Math.abs(p(5))) {
 						clen = 7;
 						if (rx === 0) break;
@@ -256,6 +264,7 @@ function drawCanvas(str) {
 						cur[1] += p(6);
 					}
 					break;
+				}
 				case "Z":
 				case "z":
 					clen = 0;
@@ -277,7 +286,7 @@ function drawCanvas(str) {
 		}
 	}
 }
-var presetMaps = [
+const presetMaps = [
 	["Regular", {
 		weight_x: 60.0,
 		weight_y: 50.0,
@@ -339,27 +348,29 @@ var presetMaps = [
 		bottomBearing: 100.0
 	}, [180, 300]]
 ];
-ael(document, "DOMContentLoaded", function() {
-	var pform = document.getElementById("slim_params");
-	var controlnames = [
+ael(document, "DOMContentLoaded", () => {
+	const pform = document.getElementById("slim_params");
+	const controlnames = [
 		"weight_x", "weight_y", "stem_interval", "descender", "ascender", "xHeight", "topBearing", "bottomBearing"
 	];
-	var controls = [], controlr = [], controlf = {};
-	var anonchgf = controlchgf_maker();
-	for (var i = 0, l = controlnames.length; i < l; i++) {
+	const controls = [];
+	const controlr = [];
+	const controlf = {};
+	const anonchgf = controlchgf_maker();
+	for (let i = 0, l = controlnames.length; i < l; i++) {
 		controls[i] = pform.elements[controlnames[i]];
 		controlr[i] = pform.elements["range_" + controlnames[i]];
-		var f = controlf[controlnames[i]] = controlchgf_maker(controlnames[i]);
+		const f = controlf[controlnames[i]] = controlchgf_maker(controlnames[i]);
 		ael(controls[i], "change", f);
 		if (controlr[i])
 			ael(controlr[i], "change", rangechgf_maker(controlnames[i]));
 	}
 	ael(pform.elements["text"], "keyup", anonchgf);
-	ael(pform.elements["autosubmit"], "change", function () {
+	ael(pform.elements["autosubmit"], "change", () => {
 		if (pform.elements["autosubmit"].checked) anonchgf();
 	});
-	var reprtype_radios = pform.elements["reprtype"];
-	for (var i = 0, l = reprtype_radios.length; i < l; i++) {
+	const reprtype_radios = pform.elements["reprtype"];
+	for (let i = 0, l = reprtype_radios.length; i < l; i++) {
 		ael(reprtype_radios[i], "click", anonchgf);
 	}
 	/*@cc_on
@@ -367,16 +378,16 @@ ael(document, "DOMContentLoaded", function() {
 		reprtype_radios[2].checked = true; // VML
 	}
 	@*/
-	var map = {};
+	const map = {};
 	function getFormValues() {
-		for(var i = 0, l = controlnames.length; i < l; i++) {
-			var inp = parseFloat(controls[i].value)
+		for(let i = 0, l = controlnames.length; i < l; i++) {
+			const inp = parseFloat(controls[i].value);
 			if (inp === inp) // not NaN
 				map[controlnames[i]] = inp;
 		}
 	}
 	function setFormValues() {
-		for(var i = 0, l = controlnames.length; i < l; i++) {
+		for(let i = 0, l = controlnames.length; i < l; i++) {
 			controls[i].value = map[controlnames[i]];
 			if (controlr[i])
 				controlr[i].value = map[controlnames[i]];
@@ -396,34 +407,35 @@ ael(document, "DOMContentLoaded", function() {
 		} else {
 			limVal("stem_interval", map["weight_x"]);
 		}
-		var ipdifxy = map["stem_interval"] + Math.abs(map["weight_x"] - map["weight_y"]);
+		const ipdifxy = map["stem_interval"] + Math.abs(map["weight_x"] - map["weight_y"]);
 		limVal("xHeight", 2 * ipdifxy + map["weight_y"]);
 		limVal("ascender",    ipdifxy + map["xHeight"]);
 		limVal("descender",   ipdifxy);
 		setFormValues();
 	}
 	function controlchgf_maker(name) {
-		return function () {
+		return () => {
 			limForm(name);
 			if (pform.elements["autosubmit"].checked)
 				formsubfunc();
 		};
 	}
 	function rangechgf_maker(name) {
-		return function () {
+		return () => {
 			pform.elements[name].value = pform.elements["range_" + name].value;
 			controlf[name]();
 		}
 	}
-	var formsubfunc = function() {
+	const formsubfunc = () => {
 		limForm();
-		var map2 = {};
-		for(var i = 0, l = valueskey.length; i < l; i++) {
-			var key = valueskey[i];
+		const map2 = {};
+		for(let i = 0, l = valueskey.length; i < l; i++) {
+			const key = valueskey[i];
+			let val;
 			if (key === "space_x") {
-				var val = map["stem_interval"] - map["weight_x"];
+				val = map["stem_interval"] - map["weight_x"];
 			} else {
-				var val = map[key];
+				val = map[key];
 			}
 			map2[key] = val;
 		}
@@ -431,7 +443,7 @@ ael(document, "DOMContentLoaded", function() {
 		document.getElementById("svgarea").style.display = "none";
 		document.getElementById("canvasarea").style.display = "none";
 		document.getElementById("vmlarea").style.display = "none";
-		var text = pform.elements["text"].value;
+		const text = pform.elements["text"].value;
 		try {
 			switch (getRadioVal(pform.elements["reprtype"])) {
 				case "canvas":
@@ -453,26 +465,24 @@ ael(document, "DOMContentLoaded", function() {
 	};
 	ael(pform, "submit", formsubfunc);
 	formsubfunc();
-	var preset_selector = document.getElementById("preset_selector");
+	const preset_selector = document.getElementById("preset_selector");
 	function setMap (newmap) {
-		for (var i = 0, l = controlnames.length; i < l; i++)
+		for (let i = 0, l = controlnames.length; i < l; i++)
 			map[controlnames[i]] = newmap[controlnames[i]];
 		setFormValues();
 		formsubfunc();
 	}
-	for(var i = 0, l = presetMaps.length; i < l; i++) {
-		var div = document.createElement("div");
-		var a = document.createElement("a");
-		var s = document.createElement("div");
+	for(let i = 0, l = presetMaps.length; i < l; i++) {
+		const div = document.createElement("div");
+		const a = document.createElement("a");
+		const s = document.createElement("div");
 		s.appendChild(document.createTextNode(presetMaps[i][0]));
 		a.appendChild(s);
 		a.href = "javascript:void(0)";
 		a.title = presetMaps[i][0];
-		ael(a, "click", function (newmap) {
-			return function () {
-				setMap(newmap);
-			};
-		}(presetMaps[i][1]));
+		ael(a, "click", () => {
+			setMap(presetMaps[i][1]);
+		});
 		a.style.backgroundPosition = (-presetMaps[i][2][0]) + "px " + (-presetMaps[i][2][1]) + "px";
 		div.appendChild(a);
 		preset_selector.appendChild(div);
