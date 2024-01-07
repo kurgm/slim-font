@@ -92,32 +92,32 @@ const controls = [];
 const controlr = [];
 const controlf = {};
 const anonchgf = controlchgf_maker();
-for (let i = 0, l = controlnames.length; i < l; i++) {
-	controls[i] = pform.elements[controlnames[i]];
-	controlr[i] = pform.elements[`range_${controlnames[i]}`];
-	const f = controlf[controlnames[i]] = controlchgf_maker(controlnames[i]);
+controlnames.forEach((controlname, i) => {
+	controls[i] = pform.elements[controlname];
+	controlr[i] = pform.elements[`range_${controlname}`];
+	const f = controlf[controlname] = controlchgf_maker(controlname);
 	controls[i].addEventListener("change", f);
 	if (controlr[i])
-		controlr[i].addEventListener("change", rangechgf_maker(controlnames[i]));
-}
+		controlr[i].addEventListener("change", rangechgf_maker(controlname));
+});
 pform.elements["text"].addEventListener("keyup", anonchgf);
 pform.elements["autosubmit"].addEventListener("change", () => {
 	if (pform.elements["autosubmit"].checked) anonchgf();
 });
 const map = {};
 function getFormValues() {
-	for(let i = 0, l = controlnames.length; i < l; i++) {
+	controlnames.forEach((controlname, i) => {
 		const inp = parseFloat(controls[i].value);
 		if (inp === inp) // not NaN
-			map[controlnames[i]] = inp;
-	}
+			map[controlname] = inp;
+	});
 }
 function setFormValues() {
-	for(let i = 0, l = controlnames.length; i < l; i++) {
-		controls[i].value = map[controlnames[i]];
+	controlnames.forEach((controlname, i) => {
+		controls[i].value = map[controlname];
 		if (controlr[i])
-			controlr[i].value = map[controlnames[i]];
-	}
+			controlr[i].value = map[controlname];
+	});
 }
 function limVal(name, lim, isMax) {
 	if (isMax)
@@ -155,8 +155,7 @@ function rangechgf_maker(name) {
 const formsubfunc = () => {
 	limForm();
 	const map2 = {};
-	for(let i = 0, l = valueskey.length; i < l; i++) {
-		const key = valueskey[i];
+	for (const key of valueskey) {
 		let val;
 		if (key === "space_x") {
 			val = map["stem_interval"] - map["weight_x"];
@@ -178,23 +177,24 @@ pform.addEventListener("submit", formsubfunc);
 formsubfunc();
 const preset_selector = document.getElementById("preset_selector");
 function setMap (newmap) {
-	for (let i = 0, l = controlnames.length; i < l; i++)
-		map[controlnames[i]] = newmap[controlnames[i]];
+	for (const controlname of controlnames) {
+		map[controlname] = newmap[controlname];
+	}
 	setFormValues();
 	formsubfunc();
 }
-for(let i = 0, l = presetMaps.length; i < l; i++) {
+for (const presetMap of presetMaps) {
 	const div = document.createElement("div");
 	const a = document.createElement("a");
 	const s = document.createElement("div");
-	s.appendChild(document.createTextNode(presetMaps[i][0]));
+	s.appendChild(document.createTextNode(presetMap[0]));
 	a.appendChild(s);
 	a.href = "javascript:void(0)";
-	a.title = presetMaps[i][0];
+	a.title = presetMap[0];
 	a.addEventListener("click", () => {
-		setMap(presetMaps[i][1]);
+		setMap(presetMap[1]);
 	});
-	a.style.backgroundPosition = `${-presetMaps[i][2][0]}px ${-presetMaps[i][2][1]}px`;
+	a.style.backgroundPosition = `${-presetMap[2][0]}px ${-presetMap[2][1]}px`;
 	div.appendChild(a);
 	preset_selector.appendChild(div);
 }

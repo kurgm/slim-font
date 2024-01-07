@@ -28,7 +28,7 @@ let unit_dict = {
 let radius_inner;
 let radius_outer;
 export const setValues = (map) => {
-	for(const i in map) fontsetting[i] = map[i];
+	Object.assign(fontsetting, map);
 	initValues();
 };
 function initValues() {
@@ -64,7 +64,7 @@ function parsePosStr(str, default_unit) {
 	if (/^\d/.test(str)) str = `+${str}`;
 	let res = 0.0;
 	const pattern = /^([\+\-][0-9.]+)([xywmW]?)/;
-	for (let i = 0, l = str.length, mobj; i < l; i += mobj[0].length) {
+	for (let i = 0, mobj; i < str.length; i += mobj[0].length) {
 		mobj = str.substring(i).match(pattern);
 		if (!mobj) throw new SlimError(`syntax error in parsing position: ${str}`);
 		res += parseFloat(mobj[1]) * unit_dict[mobj[2] || default_unit];
@@ -128,8 +128,7 @@ function slim2pathd(database, glyphname, dx, dy) {
 	const slimdata = glyphdata.slim;
 	let slim_d = [];
 	let max_w = horipos(-1);
-	for (let i = 0, l = slimdata.length; i < l; i++) {
-		const slimelem = slimdata[i];
+	for (const slimelem of slimdata) {
 		if (slimelem.charAt(0) === "#") {
 			const params = slimelem.split("#");
 			const name = params[1];
@@ -155,13 +154,11 @@ function slim2pathd(database, glyphname, dx, dy) {
 			max_w = Math.max(max_w, new_glyphw);
 			continue;
 		}
-		const slimpoints = slimelem.split(/\s+/);
-		const pointc = slimpoints.length;
-		for (let j = 0; j < pointc; j++) {
-			const slimpoint = slimParsepoint(slimpoints[j], dx, dy);
+		const slimpoints = slimelem.split(/\s+/).map((token) => slimParsepoint(token, dx, dy));
+		for (const slimpoint of slimpoints) {
 			max_w = Math.max(max_w, slimpoint[0] + (fontsetting.weight_x + fontsetting.space_x) / 2.0);
-			slimpoints[j] = slimpoint;
 		}
+		const pointc = slimpoints.length;
 		const line = [];
 		for (let j = 0; j < pointc - 1; j++) {
 			const point1 = slimpoints[j];
@@ -185,8 +182,7 @@ function slim2pathd(database, glyphname, dx, dy) {
 				"points": [[], [], [], []]
 			});
 		}
-		for (let j = 0; j < pointc; j++) {
-			const p = slimpoints[j];
+		slimpoints.forEach((p, j) => {
 			const bel = j !== 0          ? line[j - 1] : null;
 			const afl = j !== pointc - 1 ? line[j]     : null;
 			let rounded = 0;
@@ -449,13 +445,13 @@ function slim2pathd(database, glyphname, dx, dy) {
 						].join(" "));
 				}
 			}
-		}
-		for (let j = 0, jl = line.length; j < jl; j++) {
-			let lstr = "M ";
-			for (let k = 0, kl = line[j].points.length; k < kl; k++)
-				lstr += `${line[j].points[k].join(",")} `;
-			lstr += "z";
-			slim_d.push(lstr);
+		});
+		for (const lineElem of line) {
+			slim_d.push([
+				"M",
+				...lineElem.points.map((p) => p.join(",")),
+				"z"
+			].join(" "));
 		}
 	}
 	return [slim_d, getGlyphWidth(database, glyphname, max_w, dx)];
@@ -469,8 +465,8 @@ function slim2svgg(database, glyphname, properties) {
 	glyphdata.id = glyphdata.id || glyphname.split("/").join("_");
 	let buffer = "";
 	buffer += `<g id="${glyphdata.id}"${properties}>`;
-	for (let i = 0, l = slim_d.length; i < l; i++)
-		buffer += `<path d="${slim_d[i]}" />`;
+	for (const d of slim_d)
+		buffer += `<path d="${d}" />`;
 	buffer += "</g>";
 	return [buffer, glyph_w];
 }
@@ -497,7 +493,7 @@ function exampleStringSvg(database, string) {
 	if (typeof string === "undefined") string = "The quick brown fox jumps over the lazy dog.";
 	let buffer = "";
 	let svglist_x = 0.0;
-	for (let i = 0, l = string.length; i < l; i++) {
+	for (let i = 0; i < string.length; i++) {
 		const c = char2glyphname(string.charAt(i));
 		const gg = slim2svgg(database, c, ` transform="translate(${svglist_x},0)"`);
 		const g_elem = gg[0];
@@ -513,7 +509,7 @@ export const getPathD = (string) => {
 	string = string || "";
 	let pathd = [];
 	let dx = 0.0;
-	for (let i = 0, l = string.length; i < l; i++) {
+	for (let i = 0; i < string.length; i++) {
 		const c = char2glyphname(string.charAt(i));
 		const pd = slim2pathd(slimDatabase, c, dx, 0);
 		const slim_d = pd[0];
