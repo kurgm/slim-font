@@ -1,13 +1,23 @@
 import slimDatabase from "./slim_db.js";
 
+/**
+ * @typedef {import("./index.js").FontSetting} FontSetting
+ * @typedef {import("./slim_db.js").SlimGlyphData} SlimGlyphData
+ */
+
 export class SlimError extends Error {
 	static {
 		this.prototype.name = "SlimError";
 	}
 }
+/**
+ * @param {number} a 
+ * @param {number} b 
+ */
 function copysign (a, b) {
 	return a * b < 0 ? -a : a;
 }
+/** @type {FontSetting} */
 const fontsetting = {
 	weight_x: 60.0,
 	weight_y: 50.0,
@@ -18,12 +28,19 @@ const fontsetting = {
 	topBearing: 100.0,
 	bottomBearing: 100.0
 };
+/** @type {Record<string, number>} */
 let vertpos = {
 };
+/** @type {Record<string, number>} */
 let unit_dict = {
 };
+/** @type {number} */
 let radius_inner;
+/** @type {number} */
 let radius_outer;
+/**
+ * @param {FontSetting} map 
+ */
 export const setValues = (map) => {
 	Object.assign(fontsetting, map);
 	initValues();
@@ -53,11 +70,17 @@ function initValues() {
 	radius_outer = m.weight_x + radius_inner;
 }
 initValues();
+/**
+ * @param {number} n
+ */
 function horipos (n) {
 	return (fontsetting.space_x + fontsetting.weight_x) * (n + 0.5);
 }
-function parsePosStr(str, default_unit) {
-	default_unit = default_unit || "w";
+/**
+ * @param {string} str
+ * @param {string} [default_unit]
+ */
+function parsePosStr(str, default_unit = "w") {
 	if (/^\d/.test(str)) str = `+${str}`;
 	let res = 0.0;
 	const pattern = /([\+\-][0-9.]+)([xywmW]?)/y;
@@ -68,6 +91,12 @@ function parsePosStr(str, default_unit) {
 	}
 	return res;
 }
+/**
+ * @param {number} xScale
+ * @param {number} yScale
+ * @param {number} x
+ * @param {number} y
+ */
 function pathCorner(xScale, yScale, x, y) {
 	const isnotinv = xScale * yScale > 0;
 	return [
@@ -91,11 +120,17 @@ function pathCorner(xScale, yScale, x, y) {
 		"z"
 	].join(" ");
 }
+/** @type {Record<string, 0 | 1 | 2>} */
 const typdic = {
 	"s": 0,
 	"r": 1,
 	"b": 2
 };
+/**
+ * @param {string} slimpoint
+ * @param {number} dx
+ * @param {number} dy
+ */
 function slimParsepoint(slimpoint, dx, dy) {
 	dx = dx || 0.0;
 	dy = dy || 0.0;
@@ -118,11 +153,17 @@ function slimParsepoint(slimpoint, dx, dy) {
 		afty
 	];
 }
-function slim2pathd(database, glyphname, dx, dy) {
-	dx = dx || 0.0;
-	dy = dy || 0.0;
+/**
+ * @param {Record<string, SlimGlyphData>} database
+ * @param {string} glyphname
+ * @param {number} [dx]
+ * @param {number} [dy]
+ * @returns {[string[], number]}
+ */
+function slim2pathd(database, glyphname, dx = 0.0, dy = 0.0) {
 	const glyphdata = database[glyphname];
 	const slimdata = glyphdata.slim;
+	/** @type {string[]} */
 	const slim_d = [];
 	let max_w = horipos(-1);
 	for (const slimelem of slimdata) {
@@ -443,6 +484,12 @@ function slim2pathd(database, glyphname, dx, dy) {
 	}
 	return [slim_d, getGlyphWidth(database, glyphname, max_w, dx)];
 }
+/**
+ * @param {Record<string, SlimGlyphData>} database
+ * @param {string} glyphname
+ * @param {string} [properties]
+ * @returns {[string, number]}
+ */
 function slim2svgg(database, glyphname, properties) {
 	properties = properties || "";
 	const pd = slim2pathd(database, glyphname);
@@ -453,6 +500,12 @@ function slim2svgg(database, glyphname, properties) {
 	const buffer = `<g id="${glyphdata.id}"${properties}>${slim_d.map((d) => `<path d="${d}" />`).join("")}</g>`;
 	return [buffer, glyph_w];
 }
+/**
+ * @param {Record<string, SlimGlyphData>} database
+ * @param {string} glyphname
+ * @param {number} default_
+ * @param {number} dx
+ */
 function getGlyphWidth(database, glyphname, default_, dx) {
 	dx = dx || 0.0;
 	if (/\/[cC]ombining$/.test(glyphname))
@@ -462,10 +515,17 @@ function getGlyphWidth(database, glyphname, default_, dx) {
 		return default_;
 	return parsePosStr(glyphdata.width, "w") + dx;
 }
+/**
+ * @param {string} c
+ */
 function char2glyphname(c) {
 	const name = `uni${c.codePointAt(0).toString(16).padStart(4, "0")}`;
 	return slimDatabase[name] ? name : ".notdef";
 }
+/**
+ * @param {Record<string, SlimGlyphData>} database
+ * @param {string} string
+ */
 function exampleStringSvg(database, string) {
 	if (typeof string === "undefined") string = "The quick brown fox jumps over the lazy dog.";
 	const g_elems = [];
@@ -481,6 +541,10 @@ function exampleStringSvg(database, string) {
 	const lineHeight = fontsetting.topBearing + fontsetting.ascender + fontsetting.descender + fontsetting.bottomBearing;
 	return `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" viewBox="0 0 ${svglist_x} ${lineHeight}" preserveAspectRatio="xMinYMid meet" id="svg">${g_elems.join("")}</svg>`;
 }
+/**
+ * @param {string} string 
+ * @returns {[string[], number, number]}
+ */
 // for canvas
 export const getPathD = (string) => {
 	string = string || "";
@@ -497,4 +561,7 @@ export const getPathD = (string) => {
 	const lineHeight = fontsetting.topBearing + fontsetting.ascender + fontsetting.descender + fontsetting.bottomBearing;
 	return [pathd, dx, lineHeight];
 };
+/**
+ * @param {string} string 
+ */
 export const getSvg = (string) => exampleStringSvg(slimDatabase, string || "");

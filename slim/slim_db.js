@@ -1,3 +1,14 @@
+/**
+ * @typedef {{
+ *  id?: string,
+ *  width?: string,
+ *  slim: string[],
+ * }} SlimGlyphData
+ */
+
+/**
+ * @type {Record<string, SlimGlyphData>}
+ */
 // generated at 2013-11-03T17:29
 export default {
 ".notdef":{"id":"notdef","slim":["t,0 t,2 b,2 b,0 t,0","bt,0 bb,2","bt,2 bb,0"]},

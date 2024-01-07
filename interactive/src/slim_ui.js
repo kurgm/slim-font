@@ -1,13 +1,22 @@
 import { getSvg, setValues } from "@kurgm/slim-font";
 
+/**
+ * @typedef {import("@kurgm/slim-font").FontSetting} FontSetting
+ * @typedef {Omit<FontSetting, "space_x"> & { stem_interval: number }} InputParam
+ */
+
 class SlimUIError extends Error {
 	static {
 		this.prototype.name = "SlimUIError";
 	}
 }
+/** @type {(keyof FontSetting)[]} */
 const valueskey = [
 	"weight_x", "weight_y", "space_x", "descender", "ascender", "xHeight", "topBearing", "bottomBearing"
 ];
+/**
+ * @param {string} str
+ */
 function drawSvg(str) {
 	const svg = getSvg(str);
 	document.getElementById("svgarea").innerHTML = svg;
@@ -18,6 +27,7 @@ function drawSvg(str) {
 	svgelm.setAttribute("width", max_w);
 	svgelm.setAttribute("height", max_h);
 }
+/** @type {readonly [string, Readonly<InputParam>, [number, number]][]} */
 const presetMaps = [
 	["Regular", {
 		weight_x: 60.0,
@@ -81,7 +91,9 @@ const presetMaps = [
 	}, [180, 300]]
 ];
 
+/** @type {HTMLFormElement} */
 const pform = document.getElementById("slim_params");
+/** @type {(keyof InputParam)[]} */
 const controlnames = [
 	"weight_x", "weight_y", "stem_interval", "descender", "ascender", "xHeight", "topBearing", "bottomBearing"
 ];
@@ -101,6 +113,7 @@ pform.elements["text"].addEventListener("keyup", anonchgf);
 pform.elements["autosubmit"].addEventListener("change", () => {
 	if (pform.elements["autosubmit"].checked) anonchgf();
 });
+/** @type {InputParam} */
 const map = {};
 function getFormValues() {
 	controlnames.forEach((controlname, i) => {
@@ -116,9 +129,17 @@ function setFormValues() {
 			controlr[i].value = map[controlname];
 	});
 }
-function limVal(name, lim, isMax) {
+/**
+ * @param {keyof InputParam} name
+ * @param {number} lim 
+ * @param {boolean} [isMax]
+ */
+function limVal(name, lim, isMax = false) {
 	map[name] = isMax ? Math.min(map[name], lim) : Math.max(map[name], lim);
 }
+/**
+ * @param {keyof InputParam} [name]
+ */
 function limForm(name) {
 	getFormValues();
 	if (name) limVal(name, 1);
@@ -133,6 +154,9 @@ function limForm(name) {
 	limVal("descender",   ipdifxy);
 	setFormValues();
 }
+/**
+ * @param {keyof InputParam} [name]
+ */
 function controlchgf_maker(name) {
 	return () => {
 		limForm(name);
@@ -140,6 +164,9 @@ function controlchgf_maker(name) {
 			formsubfunc();
 	};
 }
+/**
+ * @param {keyof InputParam} name
+ */
 function rangechgf_maker(name) {
 	return () => {
 		pform.elements[name].value = pform.elements[`range_${name}`].value;
@@ -148,6 +175,7 @@ function rangechgf_maker(name) {
 }
 const formsubfunc = () => {
 	limForm();
+	/** @type {FontSetting} */
 	const map2 = {};
 	for (const key of valueskey) {
 		map2[key] = key === "space_x" ? map["stem_interval"] - map["weight_x"] : map[key];
@@ -164,6 +192,9 @@ const formsubfunc = () => {
 pform.addEventListener("submit", formsubfunc);
 formsubfunc();
 const preset_selector = document.getElementById("preset_selector");
+/**
+ * @param {InputParam} newmap
+ */
 function setMap (newmap) {
 	for (const controlname of controlnames) {
 		map[controlname] = newmap[controlname];
