@@ -63,9 +63,9 @@ function parsePosStr(str, default_unit) {
 	default_unit = default_unit || "w";
 	if (/^\d/.test(str)) str = `+${str}`;
 	let res = 0.0;
-	const pattern = /^([\+\-][0-9.]+)([xywmW]?)/;
-	for (let i = 0, mobj; i < str.length; i += mobj[0].length) {
-		mobj = str.substring(i).match(pattern);
+	const pattern = /([\+\-][0-9.]+)([xywmW]?)/y;
+	while (pattern.lastIndex < str.length) {
+		const mobj = pattern.exec(str);
 		if (!mobj) throw new SlimError(`syntax error in parsing position: ${str}`);
 		res += parseFloat(mobj[1]) * unit_dict[mobj[2] || default_unit];
 	}
@@ -481,9 +481,7 @@ function getGlyphWidth(database, glyphname, default_, dx) {
 		return default_;
 }
 function char2glyphname(c) {
-	let u = c.charCodeAt(0).toString(16);
-	while (u.length < 4)
-		u = `0${u}`;
+	const u = c.codePointAt(0).toString(16).padStart(4, "0");
 	let name = `uni${u}`;
 	if (!slimDatabase[name])
 		name = ".notdef";
@@ -493,8 +491,8 @@ function exampleStringSvg(database, string) {
 	if (typeof string === "undefined") string = "The quick brown fox jumps over the lazy dog.";
 	let buffer = "";
 	let svglist_x = 0.0;
-	for (let i = 0; i < string.length; i++) {
-		const c = char2glyphname(string.charAt(i));
+	for (const char of string) {
+		const c = char2glyphname(char);
 		const gg = slim2svgg(database, c, ` transform="translate(${svglist_x},0)"`);
 		const g_elem = gg[0];
 		const glyph_w = gg[1];
@@ -509,8 +507,8 @@ export const getPathD = (string) => {
 	string = string || "";
 	let pathd = [];
 	let dx = 0.0;
-	for (let i = 0; i < string.length; i++) {
-		const c = char2glyphname(string.charAt(i));
+	for (const char of string) {
+		const c = char2glyphname(char);
 		const pd = slim2pathd(slimDatabase, c, dx, 0);
 		const slim_d = pd[0];
 		const glyph_w = pd[1];
