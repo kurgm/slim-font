@@ -1,30 +1,25 @@
-import { getSvg, setValues } from "@kurgm/slim-font";
+import { getSvg, setValues, type FontSetting } from "@kurgm/slim-font";
 
-/**
- * @typedef {import("@kurgm/slim-font").FontSetting} FontSetting
- * @typedef {Omit<FontSetting, "space_x"> & { stem_interval: number }} InputParam
- */
+type InputParam = Omit<FontSetting, "space_x"> & { stem_interval: number; };
 
 class SlimUIError extends Error {
 	static {
 		this.prototype.name = "SlimUIError";
 	}
 }
-/**
- * @param {string} str
- */
-function drawSvg(str) {
+
+function drawSvg(str: string) {
 	const svg = getSvg(str);
-	document.getElementById("svgarea").innerHTML = svg;
+	document.getElementById("svgarea")!.innerHTML = svg;
 	const svgelm = document.getElementById("svg");
 	if (!svgelm || !svgelm.setAttribute) throw new SlimUIError("svg seems unsupported");
 	const max_w = document.body.clientWidth - 100;
 	const max_h = max_w * 0.25;
-	svgelm.setAttribute("width", max_w);
-	svgelm.setAttribute("height", max_h);
+	svgelm.setAttribute("width", String(max_w));
+	svgelm.setAttribute("height", String(max_h));
 }
-/** @type {readonly [string, Readonly<InputParam>, [number, number]][]} */
-const presetMaps = [
+
+const presetMaps: readonly [string, Readonly<InputParam>, [number, number]][] = [
 	["Regular", {
 		weight_x: 60.0,
 		weight_y: 50.0,
@@ -87,57 +82,41 @@ const presetMaps = [
 	}, [180, 300]]
 ];
 
-/** @type {HTMLFormElement} */
-const pform = document.getElementById("slim_params");
-/** @type {(keyof InputParam)[]} */
-const controlnames = [
+const pform = document.getElementById("slim_params") as HTMLFormElement;
+const controlnames: (keyof InputParam)[] = [
 	"weight_x", "weight_y", "stem_interval", "descender", "ascender", "xHeight", "topBearing", "bottomBearing"
 ];
-const controls = [];
-const controlr = [];
-const controlf = {};
+const controls: HTMLInputElement[] = [];
+const controlr: (HTMLInputElement | null)[] = [];
+const controlf = {} as Record<keyof InputParam, () => void>;
 const anonchgf = controlchgf_maker();
 controlnames.forEach((controlname, i) => {
-	controls[i] = pform.elements[controlname];
-	controlr[i] = pform.elements[`range_${controlname}`];
+	controls[i] = pform.elements.namedItem(controlname) as HTMLInputElement;
+	controlr[i] = pform.elements.namedItem(`range_${controlname}`) as HTMLInputElement | null;
 	const f = controlf[controlname] = controlchgf_maker(controlname);
 	controls[i].addEventListener("change", f);
-	if (controlr[i])
-		controlr[i].addEventListener("change", rangechgf_maker(controlname));
+	controlr[i]?.addEventListener("change", rangechgf_maker(controlname));
 });
-pform.elements["text"].addEventListener("keyup", anonchgf);
-pform.elements["autosubmit"].addEventListener("change", () => {
-	if (pform.elements["autosubmit"].checked) anonchgf();
+(pform.elements.namedItem("text") as HTMLInputElement).addEventListener("keyup", anonchgf);
+(pform.elements.namedItem("autosubmit") as HTMLInputElement).addEventListener("change", () => {
+	if ((pform.elements.namedItem("autosubmit") as HTMLInputElement).checked) anonchgf();
 });
-/**
- * @returns {InputParam}
- */
-function getFormValues() {
-	return Object.fromEntries(controlnames.map((controlname, i) => [controlname, parseFloat(controls[i].value)]));
+
+function getFormValues(): InputParam {
+	return Object.fromEntries(controlnames.map((controlname, i) => [controlname, parseFloat(controls[i].value)])) as InputParam;
 }
-/**
- * @param {InputParam} map
- */
-function setFormValues(map) {
+function setFormValues(map: InputParam) {
 	controlnames.forEach((controlname, i) => {
-		controls[i].value = map[controlname];
-		if (controlr[i])
-			controlr[i].value = map[controlname];
+		controls[i].value = String(map[controlname]);
+		const rangeInput = controlr[i];
+		if (rangeInput)
+			rangeInput.value = String(map[controlname]);
 	});
 }
-/**
- * @param {InputParam} map
- * @param {keyof InputParam} name
- * @param {number} lim 
- * @param {boolean} [isMax]
- */
-function limVal(map, name, lim, isMax = false) {
+function limVal(map: InputParam, name: keyof InputParam, lim: number, isMax: boolean = false) {
 	map[name] = isMax ? Math.min(map[name], lim) : Math.max(map[name], lim);
 }
-/**
- * @param {keyof InputParam} [name]
- */
-function limForm(name) {
+function limForm(name?: keyof InputParam) {
 	const map = getFormValues();
 	if (name) limVal(map, name, 1);
 	if (name === "stem_interval") {
@@ -152,22 +131,16 @@ function limForm(name) {
 	setFormValues(map);
 	return map;
 }
-/**
- * @param {keyof InputParam} [name]
- */
-function controlchgf_maker(name) {
+function controlchgf_maker(name?: keyof InputParam) {
 	return () => {
 		limForm(name);
-		if (pform.elements["autosubmit"].checked)
+		if ((pform.elements.namedItem("autosubmit") as HTMLInputElement).checked)
 			formsubfunc();
 	};
 }
-/**
- * @param {keyof InputParam} name
- */
-function rangechgf_maker(name) {
+function rangechgf_maker(name: keyof InputParam) {
 	return () => {
-		pform.elements[name].value = pform.elements[`range_${name}`].value;
+		(pform.elements.namedItem(name) as HTMLInputElement).value = (pform.elements.namedItem(`range_${name}`) as HTMLInputElement).value;
 		controlf[name]();
 	}
 }
@@ -183,7 +156,7 @@ const formsubfunc = () => {
 		topBearing: map["topBearing"],
 		bottomBearing: map["bottomBearing"]
 	});
-	const text = pform.elements["text"].value;
+	const text = (pform.elements.namedItem("text") as HTMLInputElement).value;
 	try {
 		drawSvg(text);
 	} catch(e) {
@@ -193,11 +166,8 @@ const formsubfunc = () => {
 };
 pform.addEventListener("submit", formsubfunc);
 formsubfunc();
-const preset_selector = document.getElementById("preset_selector");
-/**
- * @param {InputParam} newmap
- */
-function setMap (newmap) {
+const preset_selector = document.getElementById("preset_selector")!;
+function setMap (newmap: InputParam) {
 	setFormValues(newmap);
 	formsubfunc();
 }
