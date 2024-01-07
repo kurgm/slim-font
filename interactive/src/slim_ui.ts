@@ -88,14 +88,16 @@ const controlnames: (keyof InputParam)[] = [
 ];
 const controls: HTMLInputElement[] = [];
 const controlr: (HTMLInputElement | null)[] = [];
-const controlf = {} as Record<keyof InputParam, () => void>;
 const anonchgf = controlchgf_maker();
 controlnames.forEach((controlname, i) => {
 	controls[i] = pform.elements.namedItem(controlname) as HTMLInputElement;
 	controlr[i] = pform.elements.namedItem(`range_${controlname}`) as HTMLInputElement | null;
-	const f = controlf[controlname] = controlchgf_maker(controlname);
+	const f = controlchgf_maker(controlname);
 	controls[i].addEventListener("change", f);
-	controlr[i]?.addEventListener("change", rangechgf_maker(controlname));
+	controlr[i]?.addEventListener("change", () => {
+		controls[i].value = controlr[i]!.value;
+		f();
+	});
 });
 (pform.elements.namedItem("text") as HTMLInputElement).addEventListener("keyup", anonchgf);
 (pform.elements.namedItem("autosubmit") as HTMLInputElement).addEventListener("change", () => {
@@ -137,12 +139,6 @@ function controlchgf_maker(name?: keyof InputParam) {
 		if ((pform.elements.namedItem("autosubmit") as HTMLInputElement).checked)
 			formsubfunc();
 	};
-}
-function rangechgf_maker(name: keyof InputParam) {
-	return () => {
-		(pform.elements.namedItem(name) as HTMLInputElement).value = (pform.elements.namedItem(`range_${name}`) as HTMLInputElement).value;
-		controlf[name]();
-	}
 }
 const formsubfunc = () => {
 	const map = limForm();
