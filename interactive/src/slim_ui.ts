@@ -122,13 +122,13 @@ function limForm(name?: keyof InputParam) {
 	const map = getFormValues();
 	if (name) limVal(map, name, 1);
 	if (name === "stem_interval") {
-		limVal(map, "weight_x", map["stem_interval"], true);
+		limVal(map, "weight_x", map.stem_interval, true);
 	} else {
-		limVal(map, "stem_interval", map["weight_x"]);
+		limVal(map, "stem_interval", map.weight_x);
 	}
-	const ipdifxy = map["stem_interval"] + Math.abs(map["weight_x"] - map["weight_y"]);
-	limVal(map, "xHeight", 2 * ipdifxy + map["weight_y"]);
-	limVal(map, "ascender",    ipdifxy + map["xHeight"]);
+	const ipdifxy = map.stem_interval + Math.abs(map.weight_x - map.weight_y);
+	limVal(map, "xHeight", 2 * ipdifxy + map.weight_y);
+	limVal(map, "ascender",    ipdifxy + map.xHeight);
 	limVal(map, "descender",   ipdifxy);
 	setFormValues(map);
 	return map;
@@ -143,14 +143,14 @@ function controlchgf_maker(name?: keyof InputParam) {
 const formsubfunc = () => {
 	const map = limForm();
 	setValues({
-		weight_x: map["weight_x"],
-		weight_y: map["weight_y"],
-		space_x: map["stem_interval"] - map["weight_x"],
-		descender: map["descender"],
-		ascender: map["ascender"],
-		xHeight: map["xHeight"],
-		topBearing: map["topBearing"],
-		bottomBearing: map["bottomBearing"]
+		weight_x: map.weight_x,
+		weight_y: map.weight_y,
+		space_x: map.stem_interval - map.weight_x,
+		descender: map.descender,
+		ascender: map.ascender,
+		xHeight: map.xHeight,
+		topBearing: map.topBearing,
+		bottomBearing: map.bottomBearing
 	});
 	const text = (pform.elements.namedItem("text") as HTMLInputElement).value;
 	try {
