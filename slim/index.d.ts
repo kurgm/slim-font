@@ -12,5 +12,5 @@ export type FontSetting = {
 };
 
 export const setValues: (map: FontSetting) => void;
-export const getPathD: (string: string) => [string[], number, number];
+export const getPathD: (string: string) => [d: string[], width: number, height: number];
 export const getSvg: (string: string) => string;

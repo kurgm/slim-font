@@ -130,6 +130,7 @@ const typdic = {
  * @param {string} slimpoint
  * @param {number} dx
  * @param {number} dy
+ * @returns {[x: number, y: number, bety: 0 | 1 | 2, afty: 0 | 1 | 2]}
  */
 function slimParsepoint(slimpoint, dx, dy) {
 	dx = dx || 0.0;
@@ -138,7 +139,9 @@ function slimParsepoint(slimpoint, dx, dy) {
 	if (!mobj) throw new SlimError(`syntax error: ${slimpoint}`);
 	const typ = mobj[1];
 	const typlen = typ.length;
+	/** @type {0 | 1 | 2} */
 	let bety;
+	/** @type {0 | 1 | 2} */
 	let afty;
 	if (typlen === 0)
 		bety = afty = 0;
@@ -158,7 +161,7 @@ function slimParsepoint(slimpoint, dx, dy) {
  * @param {string} glyphname
  * @param {number} [dx]
  * @param {number} [dy]
- * @returns {[string[], number]}
+ * @returns {[d: string[], width: number]}
  */
 function slim2pathd(database, glyphname, dx = 0.0, dy = 0.0) {
 	const glyphdata = database[glyphname];
@@ -187,6 +190,7 @@ function slim2pathd(database, glyphname, dx = 0.0, dy = 0.0) {
 			max_w = Math.max(max_w, slimpoint[0] + (fontsetting.weight_x + fontsetting.space_x) / 2.0);
 		}
 		const pointc = slimpoints.length;
+		/** @type {{ x: number, y: number, arg: number, isvert: boolean, hv: 0 | 1 | 2, points: [[number, number], [number, number], [number, number], [number, number]] }[]} */
 		const line = [];
 		for (let j = 0; j < pointc - 1; j++) {
 			const point1 = slimpoints[j];
@@ -194,6 +198,7 @@ function slim2pathd(database, glyphname, dx = 0.0, dy = 0.0) {
 			const arg = Math.atan2(point2[1] - point1[1], point2[0] - point1[0]);
 			const arg2 = Math.abs(arg / Math.PI);
 			const isvert = (0.25 < arg2) && (arg2 < 0.75);
+			/** @type {0 | 1 | 2} */
 			let hv;
 			if (arg2 === 0.5)
 				hv = 1; //vert
@@ -251,18 +256,22 @@ function slim2pathd(database, glyphname, dx = 0.0, dy = 0.0) {
 					// left-bottom corner
 					xs =  1, ys = -1;
 				slim_d.push(pathCorner(xs, ys, p[0], p[1]));
+				/** @type {[number, number]} */
 				const vert_outer = [
 					xs * (- fontsetting.weight_x / 2.0) + p[0],
 					ys * (radius_outer - fontsetting.weight_y / 2.0) + p[1]
 				];
+				/** @type {[number, number]} */
 				const vert_inner = [
 					xs * (  fontsetting.weight_x / 2.0) + p[0],
 					ys * (radius_inner + fontsetting.weight_y / 2.0) + p[1]
 				];
+				/** @type {[number, number]} */
 				const hori_outer = [
 					xs * (radius_outer - fontsetting.weight_x / 2.0) + p[0],
 					ys * (- fontsetting.weight_y / 2.0) + p[1]
 				];
+				/** @type {[number, number]} */
 				const hori_inner = [
 					xs * (radius_outer - fontsetting.weight_x / 2.0) + p[0],
 					ys * (  fontsetting.weight_y / 2.0) + p[1]
@@ -488,7 +497,7 @@ function slim2pathd(database, glyphname, dx = 0.0, dy = 0.0) {
  * @param {Record<string, SlimGlyphData>} database
  * @param {string} glyphname
  * @param {string} [properties]
- * @returns {[string, number]}
+ * @returns {[g: string, width: number]}
  */
 function slim2svgg(database, glyphname, properties = "") {
 	const pd = slim2pathd(database, glyphname);
@@ -541,7 +550,7 @@ function exampleStringSvg(database, string) {
 }
 /**
  * @param {string} string 
- * @returns {[string[], number, number]}
+ * @returns {[d: string[], width: number, height: number]}
  */
 // for canvas
 export const getPathD = (string) => {
