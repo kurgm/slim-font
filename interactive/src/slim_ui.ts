@@ -1,4 +1,4 @@
-import { getSvg, setValues, type FontSetting } from "@kurgm/slim-font";
+import { setValues, type FontSetting } from "@kurgm/slim-font";
 
 type InputParam = Omit<FontSetting, "space_x"> & { stem_interval: number; };
 
@@ -8,8 +8,7 @@ class SlimUIError extends Error {
 	}
 }
 
-function drawSvg(str: string) {
-	const svg = getSvg(str);
+function drawSvg(svg: string) {
 	document.getElementById("svgarea")!.innerHTML = svg;
 	const svgelm = document.getElementById("svg");
 	if (!svgelm || !svgelm.setAttribute) throw new SlimUIError("svg seems unsupported");
@@ -142,20 +141,23 @@ function controlchgf_maker(name?: keyof InputParam) {
 }
 const formsubfunc = () => {
 	const map = limForm();
-	setValues({
-		weight_x: map.weight_x,
-		weight_y: map.weight_y,
-		space_x: map.stem_interval - map.weight_x,
-		descender: map.descender,
-		ascender: map.ascender,
-		xHeight: map.xHeight,
-		topBearing: map.topBearing,
-		bottomBearing: map.bottomBearing
-	});
-	const text = (pform.elements.namedItem("text") as HTMLInputElement).value;
 	try {
-		drawSvg(text);
+		const { renderText } = setValues({
+			weight_x: map.weight_x,
+			weight_y: map.weight_y,
+			space_x: map.stem_interval - map.weight_x,
+			descender: map.descender,
+			ascender: map.ascender,
+			xHeight: map.xHeight,
+			topBearing: map.topBearing,
+			bottomBearing: map.bottomBearing
+		});
+		const text = (pform.elements.namedItem("text") as HTMLInputElement).value;
+		const { glyphs, width: svglist_x, height: lineHeight } = renderText(text);
+		const g_elems = glyphs.map(({ dList, offsetX }) => `<g transform="translate(${offsetX},0)">${dList.map((d) => `<path d="${d}" />`).join("")}</g>`);
+		drawSvg(`<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" viewBox="0 0 ${svglist_x} ${lineHeight}" preserveAspectRatio="xMinYMid meet" id="svg">${g_elems.join("")}</svg>`);
 	} catch(e) {
+		console.error(e);
 		alert(e);
 	}
 	return false;
