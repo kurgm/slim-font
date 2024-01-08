@@ -1,7 +1,7 @@
-import { setValues, type FontSetting } from "@kurgm/slim-font";
+import type { FontSetting } from "@kurgm/slim-font";
 
 import "./main";
-import { setRenderedText } from "./App";
+import { setRenderProps } from "./App";
 
 type InputParam = Omit<FontSetting, "space_x"> & { stem_interval: number; };
 
@@ -158,8 +158,8 @@ function controlchgf_maker(name?: keyof InputParam) {
 }
 const formsubfunc = () => {
 	const map = limForm();
-	try {
-		const { renderText } = setValues({
+	setRenderProps({
+		fontSetting: {
 			weight_x: map.weight_x,
 			weight_y: map.weight_y,
 			space_x: map.stem_interval - map.weight_x,
@@ -168,14 +168,9 @@ const formsubfunc = () => {
 			xHeight: map.xHeight,
 			topBearing: map.topBearing,
 			bottomBearing: map.bottomBearing
-		});
-		const text = (pform.elements.namedItem("text") as HTMLInputElement).value;
-		const renderedText = renderText(text);
-		setRenderedText(renderedText);
-	} catch(e) {
-		console.error(e);
-		alert(e);
-	}
+		},
+		text: (pform.elements.namedItem("text") as HTMLInputElement).value,
+	});
 	return false;
 };
 pform.addEventListener("submit", formsubfunc);

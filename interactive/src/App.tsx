@@ -1,8 +1,6 @@
 import { FC, useSyncExternalStore } from "react";
 
-import { RenderedText } from "@kurgm/slim-font";
-
-import { Preview } from "./components/Preview";
+import { Render, RenderProps } from "./components/Render";
 
 const createExternalParam = <T,>(defaultValue: T) => {
   let currentValue = defaultValue;
@@ -27,18 +25,14 @@ const createExternalParam = <T,>(defaultValue: T) => {
   return { get, set, useExternalParam };
 };
 
-const {
-  set: setRenderedText,
-  useExternalParam: useRenderedText,
-} = createExternalParam<RenderedText | null>(null);
+const { set: setRenderProps, useExternalParam: useRenderProps } =
+  createExternalParam<RenderProps | null>(null);
 
-export { setRenderedText };
+export { setRenderProps };
 
 export const App: FC = () => {
-  const renderedText = useRenderedText();
+  const renderProps = useRenderProps();
 
-  if (!renderedText) return null;
-  return (
-    <Preview {...renderedText} />
-  );
+  if (!renderProps) return null;
+  return <Render {...renderProps} />;
 };
