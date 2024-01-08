@@ -1,107 +1,10 @@
-import type { FontSetting } from "@kurgm/slim-font";
-
 import "./main";
 import { setRenderProps } from "./App";
-
-type InputParam = Omit<FontSetting, "space_x"> & { stem_interval: number; };
-
-interface PresetMap {
-	title: string;
-	map: Readonly<InputParam>;
-	imagePosition: [number, number];
-}
-
-const presetMaps: readonly PresetMap[] = [
-	{
-		title: "Regular",
-		map: {
-			weight_x: 60.0,
-			weight_y: 50.0,
-			stem_interval: 150.0,
-			descender: 200.0,
-			ascender: 700.0,
-			xHeight: 500.0,
-			topBearing: 100.0,
-			bottomBearing: 100.0
-		},
-		imagePosition: [0, 0]
-	},
-	{
-		title: "Light",
-		map: {
-			weight_x: 50.0,
-			weight_y: 30.0,
-			stem_interval: 150.0,
-			descender: 200.0,
-			ascender: 700.0,
-			xHeight: 500.0,
-			topBearing: 100.0,
-			bottomBearing: 100.0
-		},
-		imagePosition: [180, 0]
-	},
-	{
-		title: "Bold",
-		map: {
-			weight_x: 90.0,
-			weight_y: 60.0,
-			stem_interval: 160.0,
-			descender: 200.0,
-			ascender: 700.0,
-			xHeight: 500.0,
-			topBearing: 100.0,
-			bottomBearing: 100.0
-		},
-		imagePosition: [0, 150]
-	},
-	{
-		title: "Contrast",
-		map: {
-			weight_x: 60.0,
-			weight_y: 15.0,
-			stem_interval: 150.0,
-			descender: 200.0,
-			ascender: 700.0,
-			xHeight: 500.0,
-			topBearing: 100.0,
-			bottomBearing: 100.0
-		},
-		imagePosition: [180, 150]
-	},
-	{
-		title: "Condensed",
-		map: {
-			weight_x: 60.0,
-			weight_y: 50.0,
-			stem_interval: 100.0,
-			descender: 200.0,
-			ascender: 700.0,
-			xHeight: 500.0,
-			topBearing: 100.0,
-			bottomBearing: 100.0
-		},
-		imagePosition: [0, 300]
-	},
-	{
-		title: "Medium",
-		map: {
-			weight_x: 60.0,
-			weight_y: 60.0,
-			stem_interval: 150.0,
-			descender: 200.0,
-			ascender: 700.0,
-			xHeight: 500.0,
-			topBearing: 100.0,
-			bottomBearing: 100.0
-		},
-		imagePosition: [180, 300]
-	}
-];
+import { InputParam, inputParamNames as controlnames } from "./controlParam/param";
+import { presetMaps } from "./controlParam/preset";
+import { clampInputParam } from "./controlParam/param";
 
 const pform = document.getElementById("slim_params") as HTMLFormElement;
-const controlnames: (keyof InputParam)[] = [
-	"weight_x", "weight_y", "stem_interval", "descender", "ascender", "xHeight", "topBearing", "bottomBearing"
-];
 const controls: HTMLInputElement[] = [];
 const controlr: (HTMLInputElement | null)[] = [];
 const anonchgf = controlchgf_maker();
@@ -131,21 +34,8 @@ function setFormValues(map: InputParam) {
 			rangeInput.value = String(map[controlname]);
 	});
 }
-function limVal(map: InputParam, name: keyof InputParam, lim: number, isMax = false) {
-	map[name] = isMax ? Math.min(map[name], lim) : Math.max(map[name], lim);
-}
 function limForm(name?: keyof InputParam) {
-	const map = getFormValues();
-	if (name) limVal(map, name, 1);
-	if (name === "stem_interval") {
-		limVal(map, "weight_x", map.stem_interval, true);
-	} else {
-		limVal(map, "stem_interval", map.weight_x);
-	}
-	const ipdifxy = map.stem_interval + Math.abs(map.weight_x - map.weight_y);
-	limVal(map, "xHeight", 2 * ipdifxy + map.weight_y);
-	limVal(map, "ascender",    ipdifxy + map.xHeight);
-	limVal(map, "descender",   ipdifxy);
+	const map = clampInputParam(getFormValues(), name);
 	setFormValues(map);
 	return map;
 }
