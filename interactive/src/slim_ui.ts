@@ -18,11 +18,11 @@ function drawSvg(svg: string) {
 	svgelm.setAttribute("height", String(max_h));
 }
 
-type PresetMap = {
+interface PresetMap {
 	title: string;
 	map: Readonly<InputParam>;
 	imagePosition: [number, number];
-};
+}
 
 const presetMaps: readonly PresetMap[] = [
 	{
@@ -144,7 +144,7 @@ function setFormValues(map: InputParam) {
 			rangeInput.value = String(map[controlname]);
 	});
 }
-function limVal(map: InputParam, name: keyof InputParam, lim: number, isMax: boolean = false) {
+function limVal(map: InputParam, name: keyof InputParam, lim: number, isMax = false) {
 	map[name] = isMax ? Math.min(map[name], lim) : Math.max(map[name], lim);
 }
 function limForm(name?: keyof InputParam) {
