@@ -1,7 +1,9 @@
 import slimDatabase from "./slim_db.js";
 
 /**
- * @typedef {import("./index.js").FontSetting} FontSetting
+ * @typedef {import("./index.d.ts").FontSetting} FontSetting
+ * @typedef {import("./index.d.ts").RenderedGlyph} RenderedGlyph
+ * @typedef {import("./index.d.ts").RenderedText} RenderedText
  * @typedef {import("./slim_db.js").SlimGlyphData} SlimGlyphData
  */
 
@@ -44,6 +46,7 @@ let radius_outer;
 export const setValues = (map) => {
 	Object.assign(fontsetting, map);
 	initValues();
+	return { renderText };
 };
 function initValues() {
 	const m = fontsetting;
@@ -494,19 +497,6 @@ function slim2pathd(database, glyphname, dx = 0.0, dy = 0.0) {
 /**
  * @param {Record<string, SlimGlyphData>} database
  * @param {string} glyphname
- * @param {string} [properties]
- * @returns {[g: string, width: number]}
- */
-function slim2svgg(database, glyphname, properties = "") {
-	const [slim_d, glyph_w] = slim2pathd(database, glyphname);
-	const glyphdata = database[glyphname];
-	glyphdata.id = glyphdata.id || glyphname.split("/").join("_");
-	const buffer = `<g id="${glyphdata.id}"${properties}>${slim_d.map((d) => `<path d="${d}" />`).join("")}</g>`;
-	return [buffer, glyph_w];
-}
-/**
- * @param {Record<string, SlimGlyphData>} database
- * @param {string} glyphname
  * @param {number} default_
  * @param {number} dx
  */
@@ -528,19 +518,37 @@ function char2glyphname(database, c) {
 	return database[name] ? name : ".notdef";
 }
 /**
+ * @param {string} string
+ * @param {Record<string, SlimGlyphData>} [database]
+ * @returns {RenderedText}
+ */
+const renderText = (string, database = slimDatabase) => {
+	/** @type {RenderedGlyph[]} */
+	const glyphs = [];
+	let offsetX = 0.0;
+	for (const char of string) {
+		const c = char2glyphname(database, char);
+		const [slim_d, advanceWidth] = slim2pathd(database, c);
+		glyphs.push({
+			dList: slim_d,
+			advanceWidth,
+			offsetX,
+		});
+		offsetX += advanceWidth;
+	}
+	return {
+		glyphs,
+		height: fontsetting.topBearing + fontsetting.ascender + fontsetting.descender + fontsetting.bottomBearing,
+		width: offsetX,
+	};
+}
+/**
  * @param {Record<string, SlimGlyphData>} database
  * @param {string} string
  */
 function exampleStringSvg(database, string) {
-	const g_elems = [];
-	let svglist_x = 0.0;
-	for (const char of string) {
-		const c = char2glyphname(database, char);
-		const [g_elem, glyph_w] = slim2svgg(database, c, ` transform="translate(${svglist_x},0)"`);
-		g_elems.push(g_elem);
-		svglist_x += glyph_w;
-	}
-	const lineHeight = fontsetting.topBearing + fontsetting.ascender + fontsetting.descender + fontsetting.bottomBearing;
+	const { glyphs, width: svglist_x, height: lineHeight } = renderText(string, database);
+	const g_elems = glyphs.map(({ dList, offsetX }) => `<g transform="translate(${offsetX},0)">${dList.map((d) => `<path d="${d}" />`).join("")}</g>`);
 	return `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" viewBox="0 0 ${svglist_x} ${lineHeight}" preserveAspectRatio="xMinYMid meet" id="svg">${g_elems.join("")}</svg>`;
 }
 /**
