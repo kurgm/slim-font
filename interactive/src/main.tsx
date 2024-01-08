@@ -8,5 +8,3 @@ ReactDOM.createRoot(document.getElementById("react_root")!).render(
     <App />
   </React.StrictMode>
 );
-
-export { setRenderedText } from "./App.tsx";

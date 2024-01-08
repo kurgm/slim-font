@@ -1,7 +1,7 @@
 import { setValues, type FontSetting } from "@kurgm/slim-font";
 
 import "./main";
-import { setRenderedText } from "./main";
+import { setRenderedText } from "./App";
 
 type InputParam = Omit<FontSetting, "space_x"> & { stem_interval: number; };
 
