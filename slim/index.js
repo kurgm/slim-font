@@ -490,8 +490,7 @@ function slim2pathd(database, glyphname, dx = 0.0, dy = 0.0) {
  * @param {string} [properties]
  * @returns {[string, number]}
  */
-function slim2svgg(database, glyphname, properties) {
-	properties = properties || "";
+function slim2svgg(database, glyphname, properties = "") {
 	const pd = slim2pathd(database, glyphname);
 	const slim_d = pd[0];
 	const glyph_w = pd[1];
@@ -527,7 +526,6 @@ function char2glyphname(c) {
  * @param {string} string
  */
 function exampleStringSvg(database, string) {
-	if (typeof string === "undefined") string = "The quick brown fox jumps over the lazy dog.";
 	const g_elems = [];
 	let svglist_x = 0.0;
 	for (const char of string) {
@@ -547,7 +545,6 @@ function exampleStringSvg(database, string) {
  */
 // for canvas
 export const getPathD = (string) => {
-	string = string || "";
 	const pathd = [];
 	let dx = 0.0;
 	for (const char of string) {
@@ -564,4 +561,4 @@ export const getPathD = (string) => {
 /**
  * @param {string} string 
  */
-export const getSvg = (string) => exampleStringSvg(slimDatabase, string || "");
+export const getSvg = (string) => exampleStringSvg(slimDatabase, string);
