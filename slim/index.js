@@ -520,11 +520,12 @@ function getGlyphWidth(database, glyphname, default_, dx) {
 	return parsePosStr(glyphdata.width, "w") + dx;
 }
 /**
+ * @param {Record<string, SlimGlyphData>} database
  * @param {string} c
  */
-function char2glyphname(c) {
+function char2glyphname(database, c) {
 	const name = `uni${c.codePointAt(0).toString(16).padStart(4, "0")}`;
-	return slimDatabase[name] ? name : ".notdef";
+	return database[name] ? name : ".notdef";
 }
 /**
  * @param {Record<string, SlimGlyphData>} database
@@ -534,7 +535,7 @@ function exampleStringSvg(database, string) {
 	const g_elems = [];
 	let svglist_x = 0.0;
 	for (const char of string) {
-		const c = char2glyphname(char);
+		const c = char2glyphname(database, char);
 		const [g_elem, glyph_w] = slim2svgg(database, c, ` transform="translate(${svglist_x},0)"`);
 		g_elems.push(g_elem);
 		svglist_x += glyph_w;
@@ -548,11 +549,12 @@ function exampleStringSvg(database, string) {
  */
 // for canvas
 export const getPathD = (string) => {
+	const database = slimDatabase;
 	const pathd = [];
 	let dx = 0.0;
 	for (const char of string) {
-		const c = char2glyphname(char);
-		const [slim_d, glyph_w] = slim2pathd(slimDatabase, c, dx, 0);
+		const c = char2glyphname(database, char);
+		const [slim_d, glyph_w] = slim2pathd(database, c, dx, 0);
 		pathd.push(...slim_d);
 		dx = glyph_w;
 	}
