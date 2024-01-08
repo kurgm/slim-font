@@ -19,9 +19,6 @@ controlnames.forEach((controlname, i) => {
 	});
 });
 (pform.elements.namedItem("text") as HTMLInputElement).addEventListener("keyup", anonchgf);
-(pform.elements.namedItem("autosubmit") as HTMLInputElement).addEventListener("change", () => {
-	if ((pform.elements.namedItem("autosubmit") as HTMLInputElement).checked) anonchgf();
-});
 
 function getFormValues(): InputParam {
 	return Object.fromEntries(controlnames.map((controlname, i) => [controlname, parseFloat(controls[i].value)])) as InputParam;
@@ -42,8 +39,7 @@ function limForm(name?: keyof InputParam) {
 function controlchgf_maker(name?: keyof InputParam) {
 	return () => {
 		limForm(name);
-		if ((pform.elements.namedItem("autosubmit") as HTMLInputElement).checked)
-			formsubfunc();
+		formsubfunc();
 	};
 }
 const formsubfunc = () => {
