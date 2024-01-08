@@ -15,27 +15,19 @@ export const inputParamNames: (keyof InputParam)[] = [
   "bottomBearing",
 ];
 
-function limVal(
-  map: InputParam,
-  name: keyof InputParam,
-  lim: number,
-  isMax = false
-) {
-  map[name] = isMax ? Math.min(map[name], lim) : Math.max(map[name], lim);
-}
 export function clampInputParam(
   { ...map }: InputParam,
   name?: keyof InputParam
-) {
-  if (name) limVal(map, name, 1);
+): InputParam {
+  if (name) map[name] = Math.max(map[name], 1);
   if (name === "stem_interval") {
-    limVal(map, "weight_x", map.stem_interval, true);
+    map.weight_x = Math.min(map.weight_x, map.stem_interval);
   } else {
-    limVal(map, "stem_interval", map.weight_x);
+    map.stem_interval = Math.max(map.stem_interval, map.weight_x);
   }
   const ipdifxy = map.stem_interval + Math.abs(map.weight_x - map.weight_y);
-  limVal(map, "xHeight", 2 * ipdifxy + map.weight_y);
-  limVal(map, "ascender", ipdifxy + map.xHeight);
-  limVal(map, "descender", ipdifxy);
+  map.xHeight = Math.max(map.xHeight, 2 * ipdifxy + map.weight_y);
+  map.ascender = Math.max(map.ascender, ipdifxy + map.xHeight);
+  map.descender = Math.max(map.descender, ipdifxy);
   return map;
 }
