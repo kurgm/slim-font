@@ -167,18 +167,18 @@ function setMap (newmap: InputParam) {
 	setFormValues(newmap);
 	formsubfunc();
 }
-for (const presetMap of presetMaps) {
+for (const [mapName, map, [px, py]] of presetMaps) {
 	const div = document.createElement("div");
 	const a = document.createElement("a");
 	const s = document.createElement("div");
-	s.appendChild(document.createTextNode(presetMap[0]));
+	s.appendChild(document.createTextNode(mapName));
 	a.appendChild(s);
 	a.href = "javascript:void(0)";
-	a.title = presetMap[0];
+	a.title = mapName;
 	a.addEventListener("click", () => {
-		setMap(presetMap[1]);
+		setMap(map);
 	});
-	a.style.backgroundPosition = `${-presetMap[2][0]}px ${-presetMap[2][1]}px`;
+	a.style.backgroundPosition = `${-px}px ${-py}px`;
 	div.appendChild(a);
 	preset_selector.appendChild(div);
 }
