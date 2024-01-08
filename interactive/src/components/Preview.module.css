@@ -2,3 +2,8 @@
   background-color: #fff;
   color: #000;
 }
+
+.chararea > svg {
+  width: 100%;
+  aspect-ratio: 4 / 1;
+}
