@@ -10,7 +10,10 @@ const controlr: (HTMLInputElement | null)[] = [];
 controlnames.forEach((controlname, i) => {
 	controls[i] = pform.elements.namedItem(controlname) as HTMLInputElement;
 	controlr[i] = pform.elements.namedItem(`range_${controlname}`) as HTMLInputElement | null;
-	const f = controlchgf_maker(controlname);
+	const f = () => {
+		const map = clampInputParam(getFormValues(), controlname);
+		setFormValues(map);
+	};
 	controls[i].addEventListener("change", f);
 	controlr[i]?.addEventListener("change", () => {
 		controls[i].value = controlr[i]!.value;
@@ -28,18 +31,6 @@ function setFormValues(map: InputParam) {
 		if (rangeInput)
 			rangeInput.value = String(map[controlname]);
 	});
-}
-function limForm(name?: keyof InputParam) {
-	const map = clampInputParam(getFormValues(), name);
-	setFormValues(map);
-	return map;
-}
-function controlchgf_maker(name?: keyof InputParam) {
-	return () => {
-		formsubfunc(limForm(name));
-	};
-}
-const formsubfunc = (map: InputParam) => {
 	setFontSetting({
 		weight_x: map.weight_x,
 		weight_y: map.weight_y,
@@ -50,12 +41,8 @@ const formsubfunc = (map: InputParam) => {
 		topBearing: map.topBearing,
 		bottomBearing: map.bottomBearing
 	});
-};
-const preset_selector = document.getElementById("preset_selector")!;
-function setMap (newmap: InputParam) {
-	setFormValues(newmap);
-	formsubfunc(newmap);
 }
+const preset_selector = document.getElementById("preset_selector")!;
 for (const { title: mapName, map, imagePosition: [px, py] } of presetMaps) {
 	const div = document.createElement("div");
 	const a = document.createElement("a");
@@ -65,10 +52,10 @@ for (const { title: mapName, map, imagePosition: [px, py] } of presetMaps) {
 	a.href = "javascript:void(0)";
 	a.title = mapName;
 	a.addEventListener("click", () => {
-		setMap(map);
+		setFormValues(map);
 	});
 	a.style.backgroundPosition = `${-px}px ${-py}px`;
 	div.appendChild(a);
 	preset_selector.appendChild(div);
 }
-setMap(presetMaps[0].map);
+setFormValues(presetMaps[0].map);
