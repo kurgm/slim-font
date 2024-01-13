@@ -1,0 +1,13 @@
+.columns {
+  position: relative;
+}
+
+.columns > .left {
+  width: 200px;
+}
+
+.columns > .right {
+  position: absolute;
+  left: 201px;
+  top: 0px;
+}

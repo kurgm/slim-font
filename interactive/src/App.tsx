@@ -1,5 +1,4 @@
 import { FC, useMemo, useState } from "react";
-import { createPortal } from "react-dom";
 
 import { Render } from "./components/Render";
 import { PresetSelector } from "./components/PresetSelector";
@@ -11,8 +10,12 @@ import {
 } from "./controlParam/param";
 import { PresetMap, presetMaps } from "./controlParam/preset";
 
+import style from "./App.module.css";
+
 export const App: FC = () => {
-  const [inputParam, setInputParam] = useState<Readonly<InputParam>>(presetMaps[0].map);
+  const [inputParam, setInputParam] = useState<Readonly<InputParam>>(
+    presetMaps[0].map
+  );
   const [text, setText] = useState("Lorem ipsum");
 
   const fontSetting = useMemo(
@@ -41,14 +44,14 @@ export const App: FC = () => {
           }}
         />
       </div>
-      {createPortal(
-        <PresetSelector presets={presetMaps} onClick={onPresetClick} />,
-        document.getElementById("react_portal_preset_root")!
-      )}
-      {createPortal(
-        <InputParamTable param={inputParam} onChange={onParamChange} />,
-        document.getElementById("react_portal_table_root")!
-      )}
+      <div className={style.columns}>
+        <div className={style.left}>
+          <PresetSelector presets={presetMaps} onClick={onPresetClick} />
+        </div>
+        <div className={style.right}>
+          <InputParamTable param={inputParam} onChange={onParamChange} />
+        </div>
+      </div>
     </>
   );
 };
