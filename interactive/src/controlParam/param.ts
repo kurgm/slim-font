@@ -31,3 +31,23 @@ export function clampInputParam(
   map.descender = Math.max(map.descender, ipdifxy);
   return map;
 }
+
+export const inputParamToFontSetting = ({
+  weight_x,
+  weight_y,
+  stem_interval,
+  descender,
+  ascender,
+  xHeight,
+  topBearing,
+  bottomBearing,
+}: InputParam): FontSetting => ({
+  weight_x,
+  weight_y,
+  space_x: stem_interval - weight_x,
+  descender,
+  ascender,
+  xHeight,
+  topBearing,
+  bottomBearing,
+});

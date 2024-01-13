@@ -1,7 +1,7 @@
-import { FC, useState, useSyncExternalStore } from "react";
-import { FontSetting } from "@kurgm/slim-font";
+import { FC, useMemo, useState, useSyncExternalStore } from "react";
 
 import { Render } from "./components/Render";
+import { InputParam, inputParamToFontSetting } from "./controlParam/param";
 
 const createExternalParam = <T,>(defaultValue: T) => {
   let currentValue = defaultValue;
@@ -26,15 +26,19 @@ const createExternalParam = <T,>(defaultValue: T) => {
   return { get, set, useExternalParam };
 };
 
-const { set: setFontSetting, useExternalParam: useFontSetting } =
-  createExternalParam<FontSetting | null>(null);
+const { set: setInputParam, useExternalParam: useInputParam } =
+  createExternalParam<InputParam | null>(null);
 
-export { setFontSetting };
+export { setInputParam };
 
 export const App: FC = () => {
-  const fontSetting = useFontSetting();
+  const inputParam = useInputParam();
   const [text, setText] = useState("Lorem ipsum");
 
+  const fontSetting = useMemo(
+    () => (inputParam ? inputParamToFontSetting(inputParam) : null),
+    [inputParam]
+  );
   if (!fontSetting) return null;
   return (
     <>
