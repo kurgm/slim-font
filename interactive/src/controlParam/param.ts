@@ -4,17 +4,6 @@ export type InputParam = Omit<FontSetting, "space_x"> & {
   stem_interval: number;
 };
 
-export const inputParamNames: (keyof InputParam)[] = [
-  "weight_x",
-  "weight_y",
-  "stem_interval",
-  "descender",
-  "ascender",
-  "xHeight",
-  "topBearing",
-  "bottomBearing",
-];
-
 export function clampInputParam(
   { ...map }: InputParam,
   name?: keyof InputParam

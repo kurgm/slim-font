@@ -11,36 +11,6 @@
 .slim-main {
 margin: 0 50px;
 }
-#slim_params table {
-border-spacing: 0;
-border-collapse: collapse;
-border-color: #333;
-border-style: solid;
-border-width: 1px 1px 0;
-background-color: #fff;
-color: #000;
-padding: 0;
-}
-#slim_params table td {
-margin: 0;
-padding: 0;
-border-color: #333;
-border-style: solid;
-border-width: 0 0 1px;
-vertical-align: middle;
-}
-#slim_params table td:first-child {
-text-align:right;
-}
-#slim_params table td:last-child {
-text-align:left;
-}
-#slim_params input[type="number"] {
-	width: 4em;
-}
-#slim_params tr {
-	height: 120px;
-}
 .columns-wrapper {
 	position: relative;
 }
@@ -100,33 +70,10 @@ text-align:left;
 JavaScript が有効になっている必要があります。
 </noscript>
 <div id="react_root"></div>
-<form action="javascript:void(0)" id="slim_params">
 <div class="columns-wrapper">
 <div class="column-l" id="preset_selector"></div>
-<table class="column-r">
-<tr>
-<td>水平ステムの太さ<br>
-<input type="range" name="range_weight_y" min="1" max="100" value="50" step="any"><input type="number" name="weight_y" value="50"></td>
-<td rowspan="3"><img src="src/controller.png" height="360" width="383" alt=""></td>
-<td>アセンダ<br>
-<input type="range" name="range_ascender" min="400" max="1100" value="700" step="any"><input type="number" name="ascender" value="700"></td>
-</tr>
-<tr>
-<td>垂直ステムの太さ<br>
-<input type="range" name="range_weight_x" min="1" max="200" value="60" step="any"><input type="number" name="weight_x" value="60"></td>
-<td>x-ハイト<br>
-<input type="range" name="range_xHeight" min="200" max="700" value="500" step="any"><input type="number" name="xHeight" value="500"></td>
-</tr>
-<tr>
-<td>垂直ステムの間隔<br>
-<input type="range" name="range_stem_interval" min="30" max="300" value="150" step="any"><input type="number" name="stem_interval" value="150"></td>
-<td>ディセンダ<br>
-<input type="range" name="range_descender" min="50" max="500" value="200" step="any"><input type="number" name="descender" value="200"></td>
-</tr>
-</table>
+<div class="column-r" id="react_portal_table_root"></div>
 </div>
-<input type="hidden" name="topBearing" value="100"><input type="hidden" name="bottomBearing" value="100">
-</form>
 <h3>使い方</h3>
 <ul>
 <li>「テキスト:」欄の内容を変えると表示される文字列が変わります。</li>

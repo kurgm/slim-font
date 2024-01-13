@@ -1,38 +1,7 @@
 import "./main";
 import { setInputParam } from "./App";
-import { InputParam, inputParamNames as controlnames } from "./controlParam/param";
 import { presetMaps } from "./controlParam/preset";
-import { clampInputParam } from "./controlParam/param";
 
-const pform = document.getElementById("slim_params") as HTMLFormElement;
-const controls: HTMLInputElement[] = [];
-const controlr: (HTMLInputElement | null)[] = [];
-controlnames.forEach((controlname, i) => {
-	controls[i] = pform.elements.namedItem(controlname) as HTMLInputElement;
-	controlr[i] = pform.elements.namedItem(`range_${controlname}`) as HTMLInputElement | null;
-	const f = () => {
-		const map = clampInputParam(getFormValues(), controlname);
-		setFormValues(map);
-	};
-	controls[i].addEventListener("change", f);
-	controlr[i]?.addEventListener("change", () => {
-		controls[i].value = controlr[i]!.value;
-		f();
-	});
-});
-
-function getFormValues(): InputParam {
-	return Object.fromEntries(controlnames.map((controlname, i) => [controlname, parseFloat(controls[i].value)])) as InputParam;
-}
-function setFormValues(map: InputParam) {
-	controlnames.forEach((controlname, i) => {
-		controls[i].value = String(map[controlname]);
-		const rangeInput = controlr[i];
-		if (rangeInput)
-			rangeInput.value = String(map[controlname]);
-	});
-	setInputParam(map);
-}
 const preset_selector = document.getElementById("preset_selector")!;
 for (const { title: mapName, map, imagePosition: [px, py] } of presetMaps) {
 	const div = document.createElement("div");
@@ -43,10 +12,10 @@ for (const { title: mapName, map, imagePosition: [px, py] } of presetMaps) {
 	a.href = "javascript:void(0)";
 	a.title = mapName;
 	a.addEventListener("click", () => {
-		setFormValues(map);
+		setInputParam(map);
 	});
 	a.style.backgroundPosition = `${-px}px ${-py}px`;
 	div.appendChild(a);
 	preset_selector.appendChild(div);
 }
-setFormValues(presetMaps[0].map);
+setInputParam(presetMaps[0].map);

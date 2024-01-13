@@ -1,7 +1,13 @@
 import { FC, useMemo, useState, useSyncExternalStore } from "react";
+import { createPortal } from "react-dom";
 
 import { Render } from "./components/Render";
-import { InputParam, inputParamToFontSetting } from "./controlParam/param";
+import { InputParamTable } from "./components/InputParamTable";
+import {
+  InputParam,
+  clampInputParam,
+  inputParamToFontSetting,
+} from "./controlParam/param";
 
 const createExternalParam = <T,>(defaultValue: T) => {
   let currentValue = defaultValue;
@@ -39,7 +45,13 @@ export const App: FC = () => {
     () => (inputParam ? inputParamToFontSetting(inputParam) : null),
     [inputParam]
   );
-  if (!fontSetting) return null;
+
+  const onParamChange = (name: keyof InputParam, value: number) => {
+    if (!inputParam) return;
+    setInputParam(clampInputParam({ ...inputParam, [name]: value }, name));
+  };
+
+  if (!fontSetting || !inputParam) return null;
   return (
     <>
       <Render fontSetting={fontSetting} text={text} />
@@ -54,6 +66,10 @@ export const App: FC = () => {
           }}
         />
       </div>
+      {createPortal(
+        <InputParamTable param={inputParam} onChange={onParamChange} />,
+        document.getElementById("react_portal_table_root")!
+      )}
     </>
   );
 };
