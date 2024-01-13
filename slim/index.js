@@ -164,7 +164,7 @@ export const setValues = (fontsetting) => {
 				max_w = Math.max(max_w, px + (fontsetting.weight_x + fontsetting.space_x) / 2.0);
 			}
 			const pointc = slimpoints.length;
-			/** @type {{ x: number, y: number, arg: number, isvert: boolean, hv: 0 | 1 | 2, points: [[number, number], [number, number], [number, number], [number, number]] }[]} */
+			/** @type {{ x: number, y: number, arg: number, isvert: boolean, hv: 0 | 1 | 2, pointStartR: [number, number], pointEndR: [number, number], pointEndL: [number, number], pointStartL: [number, number] }[]} */
 			const line = [];
 			for (let j = 0; j < pointc - 1; j++) {
 				const [p1x, p1y] = slimpoints[j];
@@ -186,7 +186,10 @@ export const setValues = (fontsetting) => {
 					"arg": arg,
 					"isvert": isvert,
 					"hv": hv,
-					"points": [[], [], [], []]
+					pointStartR: [],
+					pointEndR: [],
+					pointEndL: [],
+					pointStartL: [],
 				});
 			}
 			slimpoints.forEach(([px, py, pbety, pafty], j) => {
@@ -254,23 +257,23 @@ export const setValues = (fontsetting) => {
 						//vert -> hori
 						if (xs * ys > 0) {
 							//left-top or right-bottom corner
-							bel.points[1] = vert_inner, bel.points[2] = vert_outer;
-							afl.points[0] = hori_inner, afl.points[3] = hori_outer;
+							bel.pointEndR = vert_inner, bel.pointEndL = vert_outer;
+							afl.pointStartR = hori_inner, afl.pointStartL = hori_outer;
 						} else {
 							//left-bottom or right-top corner
-							bel.points[1] = vert_outer, bel.points[2] = vert_inner;
-							afl.points[0] = hori_outer, afl.points[3] = hori_inner;
+							bel.pointEndR = vert_outer, bel.pointEndL = vert_inner;
+							afl.pointStartR = hori_outer, afl.pointStartL = hori_inner;
 						}
 					} else {
 						//hori -> vert
 						if (xs * ys > 0) {
 							//left-top or right-bottom corner
-							bel.points[1] = hori_outer, bel.points[2] = hori_inner;
-							afl.points[0] = vert_outer, afl.points[3] = vert_inner;
+							bel.pointEndR = hori_outer, bel.pointEndL = hori_inner;
+							afl.pointStartR = vert_outer, afl.pointStartL = vert_inner;
 						} else {
 							//left-bottom or right-top corner
-							bel.points[1] = hori_inner, bel.points[2] = hori_outer;
-							afl.points[0] = vert_inner, afl.points[3] = vert_outer;
+							bel.pointEndR = hori_inner, bel.pointEndL = hori_outer;
+							afl.pointStartR = vert_inner, afl.pointStartL = vert_outer;
 						}
 					}
 				} else {
@@ -295,11 +298,11 @@ export const setValues = (fontsetting) => {
 						const k = 2.0 * Math.hypot(fontsetting.weight_x * vy, fontsetting.weight_y * vx);
 						const dx2 = fontsetting.weight_x ** 2 * vy / k;
 						const dy2 = fontsetting.weight_y ** 2 * vx / k;
-						bel.points[1] = [
+						bel.pointEndR = [
 							px - dx2,
 							py + dy2
 						];
-						bel.points[2] = [
+						bel.pointEndL = [
 							px + dx2,
 							py - dy2
 						];
@@ -310,11 +313,11 @@ export const setValues = (fontsetting) => {
 						const k = 2.0 * Math.hypot(fontsetting.weight_x * vy, fontsetting.weight_y * vx);
 						const dx2 = fontsetting.weight_x ** 2 * vy / k;
 						const dy2 = fontsetting.weight_y ** 2 * vx / k;
-						afl.points[0] = [
+						afl.pointStartR = [
 							px - dx2,
 							py + dy2
 						];
-						afl.points[3] = [
+						afl.pointStartL = [
 							px + dx2,
 							py - dy2
 						];
@@ -327,11 +330,11 @@ export const setValues = (fontsetting) => {
 								const signedX = copysign(fontsetting.weight_x, arg);
 								const signedY = copysign(fontsetting.weight_y, arg);
 								if (bel.hv) {
-									bel.points[1] = [
+									bel.pointEndR = [
 										px - signedX / 2.0,
 										py + signedY / 2.0
 									];
-									bel.points[2] = [
+									bel.pointEndL = [
 										px + signedX / 2.0,
 										py + signedY / 2.0
 									];
@@ -339,11 +342,11 @@ export const setValues = (fontsetting) => {
 									const vx = bel.x;
 									const vy = bel.y;
 									const d = Math.hypot(fontsetting.weight_x * vy, fontsetting.weight_y * vx) / (2.0 * vy);
-									bel.points[1] = [
+									bel.pointEndR = [
 										px + signedY / (2.0 * Math.tan(arg)) - d,
 										py + signedY / 2.0
 									];
-									bel.points[2] = [
+									bel.pointEndL = [
 										px + signedY / (2.0 * Math.tan(arg)) + d,
 										py + signedY / 2.0
 									];
@@ -360,11 +363,11 @@ export const setValues = (fontsetting) => {
 									signedX =  fontsetting.weight_x,
 									signedY =  fontsetting.weight_y;
 								if (bel.hv) {
-									bel.points[1] = [
+									bel.pointEndR = [
 										px + signedX / 2.0,
 										py + signedY / 2.0
 									];
-									bel.points[2] = [
+									bel.pointEndL = [
 										px + signedX / 2.0,
 										py - signedY / 2.0
 									];
@@ -372,11 +375,11 @@ export const setValues = (fontsetting) => {
 									const vx = bel.x;
 									const vy = bel.y;
 									const d = Math.hypot(fontsetting.weight_x * vy, fontsetting.weight_y * vx) / (2.0 * vx);
-									bel.points[1] = [
+									bel.pointEndR = [
 										px + signedX / 2.0,
 										py + signedX * Math.tan(arg) / 2.0 + d
 									];
-									bel.points[2] = [
+									bel.pointEndL = [
 										px + signedX / 2.0,
 										py + signedX * Math.tan(arg) / 2.0 - d
 									];
@@ -389,11 +392,11 @@ export const setValues = (fontsetting) => {
 								const signedX = -copysign(fontsetting.weight_x, arg);
 								const signedY = -copysign(fontsetting.weight_y, arg);
 								if (afl.hv) {
-									afl.points[0] = [
+									afl.pointStartR = [
 										px + signedX / 2.0,
 										py + signedY / 2.0
 									];
-									afl.points[3] = [
+									afl.pointStartL = [
 										px - signedX / 2.0,
 										py + signedY / 2.0
 									];
@@ -401,11 +404,11 @@ export const setValues = (fontsetting) => {
 									const vx = afl.x;
 									const vy = afl.y;
 									const d = Math.hypot(fontsetting.weight_x * vy, fontsetting.weight_y * vx) / (2.0 * vy);
-									afl.points[0] = [
+									afl.pointStartR = [
 										px + signedY / (2.0 * Math.tan(arg)) - d,
 										py + signedY / 2.0
 									];
-									afl.points[3] = [
+									afl.pointStartL = [
 										px + signedY / (2.0 * Math.tan(arg)) + d,
 										py + signedY / 2.0
 									];
@@ -422,11 +425,11 @@ export const setValues = (fontsetting) => {
 									signedX = -fontsetting.weight_x,
 									signedY = -fontsetting.weight_y;
 								if (afl.hv) {
-									afl.points[0] = [
+									afl.pointStartR = [
 										px + signedX / 2.0,
 										py - signedY / 2.0
 									];
-									afl.points[3] = [
+									afl.pointStartL = [
 										px + signedX / 2.0,
 										py + signedY / 2.0
 									];
@@ -434,11 +437,11 @@ export const setValues = (fontsetting) => {
 									const vx = afl.x;
 									const vy = afl.y;
 									const d = Math.hypot(fontsetting.weight_x * vy, fontsetting.weight_y * vx) / (2.0 * vx);
-									afl.points[0] = [
+									afl.pointStartR = [
 										px + signedX / 2.0,
 										py + signedX * Math.tan(arg) / 2.0 + d
 									];
-									afl.points[3] = [
+									afl.pointStartL = [
 										px + signedX / 2.0,
 										py + signedX * Math.tan(arg) / 2.0 - d
 									];
@@ -460,7 +463,10 @@ export const setValues = (fontsetting) => {
 			for (const lineElem of line) {
 				slim_d.push([
 					"M",
-					...lineElem.points.map((p) => p.join(",")),
+					lineElem.pointStartR.join(","),
+					lineElem.pointEndR.join(","),
+					lineElem.pointEndL.join(","),
+					lineElem.pointStartL.join(","),
 					"z"
 				].join(" "));
 			}
