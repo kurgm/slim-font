@@ -18,7 +18,7 @@ controlnames.forEach((controlname, i) => {
 		f();
 	});
 });
-(pform.elements.namedItem("text") as HTMLInputElement).addEventListener("keyup", anonchgf);
+(pform.elements.namedItem("text") as HTMLInputElement).addEventListener("input", anonchgf);
 
 function getFormValues(): InputParam {
 	return Object.fromEntries(controlnames.map((controlname, i) => [controlname, parseFloat(controls[i].value)])) as InputParam;
@@ -57,9 +57,7 @@ const formsubfunc = () => {
 		},
 		text: (pform.elements.namedItem("text") as HTMLInputElement).value,
 	});
-	return false;
 };
-pform.addEventListener("submit", formsubfunc);
 formsubfunc();
 const preset_selector = document.getElementById("preset_selector")!;
 function setMap (newmap: InputParam) {
