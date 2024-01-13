@@ -195,269 +195,60 @@ export const setValues = (fontsetting) => {
 			slimpoints.forEach(([px, py, pbety, pafty], j) => {
 				const bel = j !== 0          ? line[j - 1] : null;
 				const afl = j !== pointc - 1 ? line[j]     : null;
-				let rounded = 0;
-				let hv1;
 				if (pbety === 1 && pafty === 1) {
 					if (bel && afl) {
-						hv1 = bel.hv;
+						const hv1 = bel.hv;
 						const hv2 = afl.hv;
-						if (hv1 && hv2) {
-							if (hv1 !== hv2)
-								rounded = 2; //corner
-							else
-								rounded = 1;
-						} else
-							rounded = 1; //round
-					} else
-						rounded = 1; //round
-				} else if (pbety === 1 || pafty === 1)
-					rounded = 1;
-				else
-					rounded = 0;
-				if (rounded === 2) {
-					//corner
-					const arg1 = bel.arg / Math.PI;
-					const arg2 = afl.arg / Math.PI;
-					let xs;
-					let ys;
-					if      ((arg1 === -0.5 && arg2 === 0.0) || (arg1 === 1.0 && arg2 ===  0.5))
-						// left-top corner
-						xs =  1, ys =  1;
-					else if ((arg1 === -0.5 && arg2 === 1.0) || (arg1 === 0.0 && arg2 ===  0.5))
-						// right-top corner
-						xs = -1, ys =  1;
-					else if ((arg1 ===  0.5 && arg2 === 1.0) || (arg1 === 0.0 && arg2 === -0.5))
-						// right-bottom corner
-						xs = -1, ys = -1;
-					else if ((arg1 ===  0.5 && arg2 === 0.0) || (arg1 === 1.0 && arg2 === -0.5))
-						// left-bottom corner
-						xs =  1, ys = -1;
-					slim_d.push(pathCorner(xs, ys, px, py));
-					/** @type {[number, number]} */
-					const vert_outer = [
-						xs * (- fontsetting.weight_x / 2.0) + px,
-						ys * (radius_outer - fontsetting.weight_y / 2.0) + py
-					];
-					/** @type {[number, number]} */
-					const vert_inner = [
-						xs * (  fontsetting.weight_x / 2.0) + px,
-						ys * (radius_inner + fontsetting.weight_y / 2.0) + py
-					];
-					/** @type {[number, number]} */
-					const hori_outer = [
-						xs * (radius_outer - fontsetting.weight_x / 2.0) + px,
-						ys * (- fontsetting.weight_y / 2.0) + py
-					];
-					/** @type {[number, number]} */
-					const hori_inner = [
-						xs * (radius_outer - fontsetting.weight_x / 2.0) + px,
-						ys * (  fontsetting.weight_y / 2.0) + py
-					];
-					if (hv1 === 1) {
-						//vert -> hori
-						if (xs * ys > 0) {
-							//left-top or right-bottom corner
-							bel.pointEndR = vert_inner, bel.pointEndL = vert_outer;
-							afl.pointStartR = hori_inner, afl.pointStartL = hori_outer;
-						} else {
-							//left-bottom or right-top corner
-							bel.pointEndR = vert_outer, bel.pointEndL = vert_inner;
-							afl.pointStartR = hori_outer, afl.pointStartL = hori_inner;
-						}
-					} else {
-						//hori -> vert
-						if (xs * ys > 0) {
-							//left-top or right-bottom corner
-							bel.pointEndR = hori_outer, bel.pointEndL = hori_inner;
-							afl.pointStartR = vert_outer, afl.pointStartL = vert_inner;
-						} else {
-							//left-bottom or right-top corner
-							bel.pointEndR = hori_inner, bel.pointEndL = hori_outer;
-							afl.pointStartR = vert_inner, afl.pointStartL = vert_outer;
+						if (hv1 && hv2 && hv1 !== hv2) {
+							//corner
+							processRounded2Corner(bel, afl, px, py);
+							return;
 						}
 					}
-				} else {
-					if (rounded === 1)
-						//round stroke
+				} else if (pbety !== 1 && pafty !== 1) {
+					if (bel && pbety === 2) {
+						processRounded1CornerBel(bel, px, py);
+					}
+					if (afl && pafty === 2) {
+						processRounded1CornerAfl(afl, px, py);
+					}
+					//not rounded
+					if (bel && pbety === 0) {
+						processRounded0CornerBel(bel, px, py);
+					}
+					if (afl && pafty === 0) {
+						processRounded0CornerAfl(afl, px, py);
+					}
+					if (bel === null && afl === null)
 						slim_d.push([
 							"M",
-							px - fontsetting.weight_x / 2.0,
-							py,
-							"a",
-							fontsetting.weight_x / 2.0, fontsetting.weight_y / 2.0,
-							"0", "0", "0",
-							fontsetting.weight_x, "0",
-							fontsetting.weight_x / 2.0, fontsetting.weight_y / 2.0,
-							"0", "0", "0",
-							-fontsetting.weight_x, "0",
+							px - fontsetting.weight_x / 2, py - fontsetting.weight_y / 2,
+							px + fontsetting.weight_x / 2, py - fontsetting.weight_y / 2,
+							px + fontsetting.weight_x / 2, py + fontsetting.weight_y / 2,
+							px - fontsetting.weight_x / 2, py + fontsetting.weight_y / 2,
 							"z"
 						].join(" "));
-					if (bel && (pbety === 2 || rounded === 1)) {
-						const vx = bel.x;
-						const vy = bel.y;
-						const k = 2.0 * Math.hypot(fontsetting.weight_x * vy, fontsetting.weight_y * vx);
-						const dx2 = fontsetting.weight_x ** 2 * vy / k;
-						const dy2 = fontsetting.weight_y ** 2 * vx / k;
-						bel.pointEndR = [
-							px - dx2,
-							py + dy2
-						];
-						bel.pointEndL = [
-							px + dx2,
-							py - dy2
-						];
-					}
-					if (afl && (pafty === 2 || rounded === 1)) {
-						const vx = afl.x;
-						const vy = afl.y;
-						const k = 2.0 * Math.hypot(fontsetting.weight_x * vy, fontsetting.weight_y * vx);
-						const dx2 = fontsetting.weight_x ** 2 * vy / k;
-						const dy2 = fontsetting.weight_y ** 2 * vx / k;
-						afl.pointStartR = [
-							px - dx2,
-							py + dy2
-						];
-						afl.pointStartL = [
-							px + dx2,
-							py - dy2
-						];
-					}
-					if (rounded === 0) {
-						//not rounded
-						if (bel && pbety === 0) {
-							const arg = bel.arg;
-							if (bel.isvert) {
-								const signedX = copysign(fontsetting.weight_x, arg);
-								const signedY = copysign(fontsetting.weight_y, arg);
-								if (bel.hv) {
-									bel.pointEndR = [
-										px - signedX / 2.0,
-										py + signedY / 2.0
-									];
-									bel.pointEndL = [
-										px + signedX / 2.0,
-										py + signedY / 2.0
-									];
-								} else {
-									const vx = bel.x;
-									const vy = bel.y;
-									const d = Math.hypot(fontsetting.weight_x * vy, fontsetting.weight_y * vx) / (2.0 * vy);
-									bel.pointEndR = [
-										px + signedY / (2.0 * Math.tan(arg)) - d,
-										py + signedY / 2.0
-									];
-									bel.pointEndL = [
-										px + signedY / (2.0 * Math.tan(arg)) + d,
-										py + signedY / 2.0
-									];
-								}
-							} else {
-								let signedX;
-								let signedY;
-								if (Math.abs(arg / Math.PI) > 0.5)
-									// leftwards
-									signedX = -fontsetting.weight_x,
-									signedY = -fontsetting.weight_y;
-								else
-									// rightwards
-									signedX =  fontsetting.weight_x,
-									signedY =  fontsetting.weight_y;
-								if (bel.hv) {
-									bel.pointEndR = [
-										px + signedX / 2.0,
-										py + signedY / 2.0
-									];
-									bel.pointEndL = [
-										px + signedX / 2.0,
-										py - signedY / 2.0
-									];
-								} else {
-									const vx = bel.x;
-									const vy = bel.y;
-									const d = Math.hypot(fontsetting.weight_x * vy, fontsetting.weight_y * vx) / (2.0 * vx);
-									bel.pointEndR = [
-										px + signedX / 2.0,
-										py + signedX * Math.tan(arg) / 2.0 + d
-									];
-									bel.pointEndL = [
-										px + signedX / 2.0,
-										py + signedX * Math.tan(arg) / 2.0 - d
-									];
-								}
-							}
-						}
-						if (afl && pafty === 0) {
-							const arg = afl.arg;
-							if (afl.isvert) {
-								const signedX = -copysign(fontsetting.weight_x, arg);
-								const signedY = -copysign(fontsetting.weight_y, arg);
-								if (afl.hv) {
-									afl.pointStartR = [
-										px + signedX / 2.0,
-										py + signedY / 2.0
-									];
-									afl.pointStartL = [
-										px - signedX / 2.0,
-										py + signedY / 2.0
-									];
-								} else {
-									const vx = afl.x;
-									const vy = afl.y;
-									const d = Math.hypot(fontsetting.weight_x * vy, fontsetting.weight_y * vx) / (2.0 * vy);
-									afl.pointStartR = [
-										px + signedY / (2.0 * Math.tan(arg)) - d,
-										py + signedY / 2.0
-									];
-									afl.pointStartL = [
-										px + signedY / (2.0 * Math.tan(arg)) + d,
-										py + signedY / 2.0
-									];
-								}
-							} else {
-								let signedX;
-								let signedY;
-								if (Math.abs(arg / Math.PI) > 0.5)
-									// leftwards
-									signedX =  fontsetting.weight_x,
-									signedY =  fontsetting.weight_y;
-								else
-									// rightwards
-									signedX = -fontsetting.weight_x,
-									signedY = -fontsetting.weight_y;
-								if (afl.hv) {
-									afl.pointStartR = [
-										px + signedX / 2.0,
-										py - signedY / 2.0
-									];
-									afl.pointStartL = [
-										px + signedX / 2.0,
-										py + signedY / 2.0
-									];
-								} else {
-									const vx = afl.x;
-									const vy = afl.y;
-									const d = Math.hypot(fontsetting.weight_x * vy, fontsetting.weight_y * vx) / (2.0 * vx);
-									afl.pointStartR = [
-										px + signedX / 2.0,
-										py + signedX * Math.tan(arg) / 2.0 + d
-									];
-									afl.pointStartL = [
-										px + signedX / 2.0,
-										py + signedX * Math.tan(arg) / 2.0 - d
-									];
-								}
-							}
-						}
-						if (pointc === 1)
-							slim_d.push([
-								"M",
-								px - fontsetting.weight_x / 2, py - fontsetting.weight_y / 2,
-								px + fontsetting.weight_x / 2, py - fontsetting.weight_y / 2,
-								px + fontsetting.weight_x / 2, py + fontsetting.weight_y / 2,
-								px - fontsetting.weight_x / 2, py + fontsetting.weight_y / 2,
-								"z"
-							].join(" "));
-					}
+					return;
+				}
+				//round stroke
+				slim_d.push([
+					"M",
+					px - fontsetting.weight_x / 2.0,
+					py,
+					"a",
+					fontsetting.weight_x / 2.0, fontsetting.weight_y / 2.0,
+					"0", "0", "0",
+					fontsetting.weight_x, "0",
+					fontsetting.weight_x / 2.0, fontsetting.weight_y / 2.0,
+					"0", "0", "0",
+					-fontsetting.weight_x, "0",
+					"z"
+				].join(" "));
+				if (bel) {
+					processRounded1CornerBel(bel, px, py);
+				}
+				if (afl) {
+					processRounded1CornerAfl(afl, px, py);
 				}
 			});
 			for (const lineElem of line) {
@@ -472,6 +263,254 @@ export const setValues = (fontsetting) => {
 			}
 		}
 		return [slim_d, getGlyphWidth(database, glyphname, max_w, dx)];
+
+		/**
+		 * @param {{ x: number; y: number; arg: number; isvert: boolean; hv: 0 | 2 | 1; pointStartR: [number, number]; pointEndR: [number, number]; pointEndL: [number, number]; pointStartL: [number, number]; }} bel
+		 * @param {number} px
+		 * @param {number} py
+		 */
+		function processRounded1CornerBel(bel, px, py) {
+			const vx = bel.x;
+			const vy = bel.y;
+			const k = 2.0 * Math.hypot(fontsetting.weight_x * vy, fontsetting.weight_y * vx);
+			const dx2 = fontsetting.weight_x ** 2 * vy / k;
+			const dy2 = fontsetting.weight_y ** 2 * vx / k;
+			bel.pointEndR = [
+				px - dx2,
+				py + dy2
+			];
+			bel.pointEndL = [
+				px + dx2,
+				py - dy2
+			];
+		}
+
+		/**
+		 * @param {{ x: number; y: number; arg: number; isvert: boolean; hv: 0 | 2 | 1; pointStartR: [number, number]; pointEndR: [number, number]; pointEndL: [number, number]; pointStartL: [number, number]; }} afl
+		 * @param {number} px
+		 * @param {number} py
+		 */
+		function processRounded1CornerAfl(afl, px, py) {
+			const vx = afl.x;
+			const vy = afl.y;
+			const k = 2.0 * Math.hypot(fontsetting.weight_x * vy, fontsetting.weight_y * vx);
+			const dx2 = fontsetting.weight_x ** 2 * vy / k;
+			const dy2 = fontsetting.weight_y ** 2 * vx / k;
+			afl.pointStartR = [
+				px - dx2,
+				py + dy2
+			];
+			afl.pointStartL = [
+				px + dx2,
+				py - dy2
+			];
+		}
+
+		/**
+		 * @param {{ x: number; y: number; arg: number; isvert: boolean; hv: 0 | 2 | 1; pointStartR: [number, number]; pointEndR: [number, number]; pointEndL: [number, number]; pointStartL: [number, number]; }} bel
+		 * @param {{ x: number; y: number; arg: number; isvert: boolean; hv: 0 | 2 | 1; pointStartR: [number, number]; pointEndR: [number, number]; pointEndL: [number, number]; pointStartL: [number, number]; }} afl
+		 * @param {number} px
+		 * @param {number} py
+		 */
+		function processRounded2Corner(bel, afl, px, py) {
+			const arg1 = bel.arg / Math.PI;
+			const arg2 = afl.arg / Math.PI;
+			let xs;
+			let ys;
+			if      ((arg1 === -0.5 && arg2 === 0.0) || (arg1 === 1.0 && arg2 ===  0.5))
+				// left-top corner
+				xs =  1, ys =  1;
+			else if ((arg1 === -0.5 && arg2 === 1.0) || (arg1 === 0.0 && arg2 ===  0.5))
+				// right-top corner
+				xs = -1, ys =  1;
+			else if ((arg1 ===  0.5 && arg2 === 1.0) || (arg1 === 0.0 && arg2 === -0.5))
+				// right-bottom corner
+				xs = -1, ys = -1;
+			else if ((arg1 ===  0.5 && arg2 === 0.0) || (arg1 === 1.0 && arg2 === -0.5))
+				// left-bottom corner
+				xs =  1, ys = -1;
+			slim_d.push(pathCorner(xs, ys, px, py));
+			/** @type {[number, number]} */
+			const vert_outer = [
+				xs * (- fontsetting.weight_x / 2.0) + px,
+				ys * (radius_outer - fontsetting.weight_y / 2.0) + py
+			];
+			/** @type {[number, number]} */
+			const vert_inner = [
+				xs * (  fontsetting.weight_x / 2.0) + px,
+				ys * (radius_inner + fontsetting.weight_y / 2.0) + py
+			];
+			/** @type {[number, number]} */
+			const hori_outer = [
+				xs * (radius_outer - fontsetting.weight_x / 2.0) + px,
+				ys * (- fontsetting.weight_y / 2.0) + py
+			];
+			/** @type {[number, number]} */
+			const hori_inner = [
+				xs * (radius_outer - fontsetting.weight_x / 2.0) + px,
+				ys * (  fontsetting.weight_y / 2.0) + py
+			];
+			if (bel.hv === 1) {
+				//vert -> hori
+				if (xs * ys > 0) {
+					//left-top or right-bottom corner
+					bel.pointEndR = vert_inner, bel.pointEndL = vert_outer;
+					afl.pointStartR = hori_inner, afl.pointStartL = hori_outer;
+				} else {
+					//left-bottom or right-top corner
+					bel.pointEndR = vert_outer, bel.pointEndL = vert_inner;
+					afl.pointStartR = hori_outer, afl.pointStartL = hori_inner;
+				}
+			} else {
+				//hori -> vert
+				if (xs * ys > 0) {
+					//left-top or right-bottom corner
+					bel.pointEndR = hori_outer, bel.pointEndL = hori_inner;
+					afl.pointStartR = vert_outer, afl.pointStartL = vert_inner;
+				} else {
+					//left-bottom or right-top corner
+					bel.pointEndR = hori_inner, bel.pointEndL = hori_outer;
+					afl.pointStartR = vert_inner, afl.pointStartL = vert_outer;
+				}
+			}
+		}
+
+		/**
+		 * @param {{ x: number; y: number; arg: number; isvert: boolean; hv: 0 | 2 | 1; pointStartR: [number, number]; pointEndR: [number, number]; pointEndL: [number, number]; pointStartL: [number, number]; }} bel
+		 * @param {number} px
+		 * @param {number} py
+		 */
+		function processRounded0CornerBel(bel, px, py) {
+			const arg = bel.arg;
+			if (bel.isvert) {
+				const signedX = copysign(fontsetting.weight_x, arg);
+				const signedY = copysign(fontsetting.weight_y, arg);
+				if (bel.hv) {
+					bel.pointEndR = [
+						px - signedX / 2.0,
+						py + signedY / 2.0
+					];
+					bel.pointEndL = [
+						px + signedX / 2.0,
+						py + signedY / 2.0
+					];
+				} else {
+					const vx = bel.x;
+					const vy = bel.y;
+					const d = Math.hypot(fontsetting.weight_x * vy, fontsetting.weight_y * vx) / (2.0 * vy);
+					bel.pointEndR = [
+						px + signedY / (2.0 * Math.tan(arg)) - d,
+						py + signedY / 2.0
+					];
+					bel.pointEndL = [
+						px + signedY / (2.0 * Math.tan(arg)) + d,
+						py + signedY / 2.0
+					];
+				}
+			} else {
+				let signedX;
+				let signedY;
+				if (Math.abs(arg / Math.PI) > 0.5)
+					// leftwards
+					signedX = -fontsetting.weight_x,
+					signedY = -fontsetting.weight_y;
+
+				else
+					// rightwards
+					signedX =  fontsetting.weight_x,
+					signedY =  fontsetting.weight_y;
+				if (bel.hv) {
+					bel.pointEndR = [
+						px + signedX / 2.0,
+						py + signedY / 2.0
+					];
+					bel.pointEndL = [
+						px + signedX / 2.0,
+						py - signedY / 2.0
+					];
+				} else {
+					const vx = bel.x;
+					const vy = bel.y;
+					const d = Math.hypot(fontsetting.weight_x * vy, fontsetting.weight_y * vx) / (2.0 * vx);
+					bel.pointEndR = [
+						px + signedX / 2.0,
+						py + signedX * Math.tan(arg) / 2.0 + d
+					];
+					bel.pointEndL = [
+						px + signedX / 2.0,
+						py + signedX * Math.tan(arg) / 2.0 - d
+					];
+				}
+			}
+		}
+
+		/**
+		 * @param {{ x: number; y: number; arg: number; isvert: boolean; hv: 0 | 2 | 1; pointStartR: [number, number]; pointEndR: [number, number]; pointEndL: [number, number]; pointStartL: [number, number]; }} afl
+		 * @param {number} px
+		 * @param {number} py
+		 */
+		function processRounded0CornerAfl(afl, px, py) {
+			const arg = afl.arg;
+			if (afl.isvert) {
+				const signedX = -copysign(fontsetting.weight_x, arg);
+				const signedY = -copysign(fontsetting.weight_y, arg);
+				if (afl.hv) {
+					afl.pointStartR = [
+						px + signedX / 2.0,
+						py + signedY / 2.0
+					];
+					afl.pointStartL = [
+						px - signedX / 2.0,
+						py + signedY / 2.0
+					];
+				} else {
+					const vx = afl.x;
+					const vy = afl.y;
+					const d = Math.hypot(fontsetting.weight_x * vy, fontsetting.weight_y * vx) / (2.0 * vy);
+					afl.pointStartR = [
+						px + signedY / (2.0 * Math.tan(arg)) - d,
+						py + signedY / 2.0
+					];
+					afl.pointStartL = [
+						px + signedY / (2.0 * Math.tan(arg)) + d,
+						py + signedY / 2.0
+					];
+				}
+			} else {
+				let signedX;
+				let signedY;
+				if (Math.abs(arg / Math.PI) > 0.5)
+					// leftwards
+					signedX =  fontsetting.weight_x,
+					signedY =  fontsetting.weight_y;
+				else
+					// rightwards
+					signedX = -fontsetting.weight_x,
+					signedY = -fontsetting.weight_y;
+				if (afl.hv) {
+					afl.pointStartR = [
+						px + signedX / 2.0,
+						py - signedY / 2.0
+					];
+					afl.pointStartL = [
+						px + signedX / 2.0,
+						py + signedY / 2.0
+					];
+				} else {
+					const vx = afl.x;
+					const vy = afl.y;
+					const d = Math.hypot(fontsetting.weight_x * vy, fontsetting.weight_y * vx) / (2.0 * vx);
+					afl.pointStartR = [
+						px + signedX / 2.0,
+						py + signedX * Math.tan(arg) / 2.0 + d
+					];
+					afl.pointStartL = [
+						px + signedX / 2.0,
+						py + signedX * Math.tan(arg) / 2.0 - d
+					];
+				}
+			}
+		}
 	}
 	/**
 	 * @param {Record<string, SlimGlyphData>} database
