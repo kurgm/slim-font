@@ -36,12 +36,10 @@ function limForm(name?: keyof InputParam) {
 }
 function controlchgf_maker(name?: keyof InputParam) {
 	return () => {
-		limForm(name);
-		formsubfunc();
+		formsubfunc(limForm(name));
 	};
 }
-const formsubfunc = () => {
-	const map = limForm();
+const formsubfunc = (map: InputParam) => {
 	setFontSetting({
 		weight_x: map.weight_x,
 		weight_y: map.weight_y,
@@ -53,11 +51,11 @@ const formsubfunc = () => {
 		bottomBearing: map.bottomBearing
 	});
 };
-formsubfunc();
+formsubfunc(limForm());
 const preset_selector = document.getElementById("preset_selector")!;
 function setMap (newmap: InputParam) {
 	setFormValues(newmap);
-	formsubfunc();
+	formsubfunc(newmap);
 }
 for (const { title: mapName, map, imagePosition: [px, py] } of presetMaps) {
 	const div = document.createElement("div");
