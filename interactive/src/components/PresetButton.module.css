@@ -1,0 +1,30 @@
+.button > a {
+  background-color: #fff;
+  color: #222;
+  text-decoration: none;
+  display: block;
+  width: 180px;
+  height: 150px;
+  position: relative;
+  background-repeat: no-repeat;
+  background-image: url(../controlParam/slim_select.png);
+}
+
+.button:nth-child(even) > a:not(:hover) {
+  background-color: #eee;
+  color: #222;
+}
+
+.button > a:hover {
+  background-color: #ccc;
+  color: #00f;
+}
+
+.button > a > div {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  line-height: 15px;
+  font-size: 12px;
+  text-align: center;
+}

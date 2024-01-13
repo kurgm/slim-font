@@ -22,42 +22,6 @@ margin: 0 50px;
 	left: 201px;
 	top: 0px;
 }
-#preset_selector {
-	overflow-x: hidden;
-	overflow-y: scroll;
-	position: relative;
-	height: 370px;
-	border-width: 1px 0px 1px 1px;
-	border-style: solid;
-	border-color: #333;
-}
-#preset_selector a {
-	background-color: #fff;
-	color: #222;
-	text-decoration: none;
-	display: block;
-	width: 180px;
-	height: 150px;
-	position: relative;
-	background-repeat: no-repeat;
-	background-image: url(src/slim_select.png);
-}
-#preset_selector>div:nth-child(even) a:not(:hover) {
-	background-color: #eee;
-	color: #222;
-}
-#preset_selector a:hover {
-	background-color: #ccc;
-	color: #00f;
-}
-#preset_selector a div {
-	position: absolute;
-	bottom: 0;
-	width: 100%;
-	line-height: 15px;
-	font-size: 12px;
-	text-align: center;
-}
 </style>
 <script type="module" src="src/slim_ui.ts"></script>
 </head>
@@ -71,7 +35,7 @@ JavaScript が有効になっている必要があります。
 </noscript>
 <div id="react_root"></div>
 <div class="columns-wrapper">
-<div class="column-l" id="preset_selector"></div>
+<div class="column-l" id="react_portal_preset_root"></div>
 <div class="column-r" id="react_portal_table_root"></div>
 </div>
 <h3>使い方</h3>

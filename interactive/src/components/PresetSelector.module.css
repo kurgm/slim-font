@@ -1,0 +1,9 @@
+.selector {
+  overflow-x: hidden;
+  overflow-y: scroll;
+  position: relative;
+  height: 370px;
+  border-width: 1px 0px 1px 1px;
+  border-style: solid;
+  border-color: #333;
+}
