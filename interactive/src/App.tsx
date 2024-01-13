@@ -35,28 +35,24 @@ const createExternalParam = <T,>(defaultValue: T) => {
 };
 
 const { set: setInputParam, useExternalParam: useInputParam } =
-  createExternalParam<InputParam | null>(null);
-
-export { setInputParam };
+  createExternalParam<InputParam>(presetMaps[0].map);
 
 export const App: FC = () => {
   const inputParam = useInputParam();
   const [text, setText] = useState("Lorem ipsum");
 
   const fontSetting = useMemo(
-    () => (inputParam ? inputParamToFontSetting(inputParam) : null),
+    () => inputParamToFontSetting(inputParam),
     [inputParam]
   );
 
   const onParamChange = (name: keyof InputParam, value: number) => {
-    if (!inputParam) return;
     setInputParam(clampInputParam({ ...inputParam, [name]: value }, name));
   };
   const onPresetClick = (preset: Readonly<PresetMap>) => {
     setInputParam(preset.map);
   };
 
-  if (!fontSetting || !inputParam) return null;
   return (
     <>
       <Render fontSetting={fontSetting} text={text} />
