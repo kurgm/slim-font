@@ -1,4 +1,4 @@
-import { FC, useMemo, useState, useSyncExternalStore } from "react";
+import { FC, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 
 import { Render } from "./components/Render";
@@ -11,34 +11,8 @@ import {
 } from "./controlParam/param";
 import { PresetMap, presetMaps } from "./controlParam/preset";
 
-const createExternalParam = <T,>(defaultValue: T) => {
-  let currentValue = defaultValue;
-  const callbacks: (() => void)[] = [];
-
-  const get = () => currentValue;
-  const set = (value: T) => {
-    currentValue = value;
-    callbacks.forEach((cb) => cb());
-  };
-  const subscribe = (cb: () => void) => {
-    callbacks.push(cb);
-    return () => {
-      const index = callbacks.indexOf(cb);
-      if (index !== -1) {
-        callbacks.splice(index, 1);
-      }
-    };
-  };
-
-  const useExternalParam = () => useSyncExternalStore(subscribe, get);
-  return { get, set, useExternalParam };
-};
-
-const { set: setInputParam, useExternalParam: useInputParam } =
-  createExternalParam<InputParam>(presetMaps[0].map);
-
 export const App: FC = () => {
-  const inputParam = useInputParam();
+  const [inputParam, setInputParam] = useState<Readonly<InputParam>>(presetMaps[0].map);
   const [text, setText] = useState("Lorem ipsum");
 
   const fontSetting = useMemo(

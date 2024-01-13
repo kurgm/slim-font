@@ -30,7 +30,7 @@ export const inputParamToFontSetting = ({
   xHeight,
   topBearing,
   bottomBearing,
-}: InputParam): FontSetting => ({
+}: Readonly<InputParam>): FontSetting => ({
   weight_x,
   weight_y,
   space_x: stem_interval - weight_x,

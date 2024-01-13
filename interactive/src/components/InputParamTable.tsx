@@ -7,7 +7,7 @@ import controllerPath from "./controller.png";
 import style from "./InputParamTable.module.css";
 
 interface InputParamTableProps {
-  param: InputParam;
+  param: Readonly<InputParam>;
   onChange: (name: keyof InputParam, value: number) => void;
 }
 
