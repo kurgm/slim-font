@@ -24,6 +24,5 @@ export type RenderedText = {
 
 export const setValues: (map: FontSetting) => {
 	renderText: (string: string) => RenderedText;
+	renderTextSvg: (string: string) => string;
 };
-export const getPathD: (string: string) => [d: string[], width: number, height: number];
-export const getSvg: (string: string) => string;

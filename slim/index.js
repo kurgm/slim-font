@@ -41,12 +41,12 @@ let radius_inner;
 /** @type {number} */
 let radius_outer;
 /**
- * @param {FontSetting} map 
+ * @type {typeof import('./index.d.ts').setValues}
  */
 export const setValues = (map) => {
 	Object.assign(fontsetting, map);
 	initValues();
-	return { renderText };
+	return { renderText, renderTextSvg };
 };
 function initValues() {
 	const m = fontsetting;
@@ -543,33 +543,12 @@ const renderText = (string, database = slimDatabase) => {
 	};
 }
 /**
- * @param {Record<string, SlimGlyphData>} database
  * @param {string} string
+ * @param {Record<string, SlimGlyphData>} [database]
+ * @returns {string}
  */
-function exampleStringSvg(database, string) {
+const renderTextSvg = (string, database = slimDatabase) => {
 	const { glyphs, width: svglist_x, height: lineHeight } = renderText(string, database);
 	const g_elems = glyphs.map(({ dList, offsetX }) => `<g transform="translate(${offsetX},0)">${dList.map((d) => `<path d="${d}" />`).join("")}</g>`);
 	return `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" viewBox="0 0 ${svglist_x} ${lineHeight}" preserveAspectRatio="xMinYMid meet" id="svg">${g_elems.join("")}</svg>`;
 }
-/**
- * @param {string} string 
- * @returns {[d: string[], width: number, height: number]}
- */
-// for canvas
-export const getPathD = (string) => {
-	const database = slimDatabase;
-	const pathd = [];
-	let dx = 0.0;
-	for (const char of string) {
-		const c = char2glyphname(database, char);
-		const [slim_d, glyph_w] = slim2pathd(database, c, dx, 0);
-		pathd.push(...slim_d);
-		dx = glyph_w;
-	}
-	const lineHeight = fontsetting.topBearing + fontsetting.ascender + fontsetting.descender + fontsetting.bottomBearing;
-	return [pathd, dx, lineHeight];
-};
-/**
- * @param {string} string 
- */
-export const getSvg = (string) => exampleStringSvg(slimDatabase, string);
