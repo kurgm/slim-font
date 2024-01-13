@@ -51,7 +51,6 @@ const formsubfunc = (map: InputParam) => {
 		bottomBearing: map.bottomBearing
 	});
 };
-formsubfunc(limForm());
 const preset_selector = document.getElementById("preset_selector")!;
 function setMap (newmap: InputParam) {
 	setFormValues(newmap);
@@ -72,3 +71,4 @@ for (const { title: mapName, map, imagePosition: [px, py] } of presetMaps) {
 	div.appendChild(a);
 	preset_selector.appendChild(div);
 }
+setMap(presetMaps[0].map);
