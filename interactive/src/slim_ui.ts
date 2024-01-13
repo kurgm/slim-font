@@ -1,5 +1,5 @@
 import "./main";
-import { setRenderProps } from "./App";
+import { setFontSetting } from "./App";
 import { InputParam, inputParamNames as controlnames } from "./controlParam/param";
 import { presetMaps } from "./controlParam/preset";
 import { clampInputParam } from "./controlParam/param";
@@ -7,7 +7,6 @@ import { clampInputParam } from "./controlParam/param";
 const pform = document.getElementById("slim_params") as HTMLFormElement;
 const controls: HTMLInputElement[] = [];
 const controlr: (HTMLInputElement | null)[] = [];
-const anonchgf = controlchgf_maker();
 controlnames.forEach((controlname, i) => {
 	controls[i] = pform.elements.namedItem(controlname) as HTMLInputElement;
 	controlr[i] = pform.elements.namedItem(`range_${controlname}`) as HTMLInputElement | null;
@@ -18,7 +17,6 @@ controlnames.forEach((controlname, i) => {
 		f();
 	});
 });
-(pform.elements.namedItem("text") as HTMLInputElement).addEventListener("input", anonchgf);
 
 function getFormValues(): InputParam {
 	return Object.fromEntries(controlnames.map((controlname, i) => [controlname, parseFloat(controls[i].value)])) as InputParam;
@@ -44,18 +42,15 @@ function controlchgf_maker(name?: keyof InputParam) {
 }
 const formsubfunc = () => {
 	const map = limForm();
-	setRenderProps({
-		fontSetting: {
-			weight_x: map.weight_x,
-			weight_y: map.weight_y,
-			space_x: map.stem_interval - map.weight_x,
-			descender: map.descender,
-			ascender: map.ascender,
-			xHeight: map.xHeight,
-			topBearing: map.topBearing,
-			bottomBearing: map.bottomBearing
-		},
-		text: (pform.elements.namedItem("text") as HTMLInputElement).value,
+	setFontSetting({
+		weight_x: map.weight_x,
+		weight_y: map.weight_y,
+		space_x: map.stem_interval - map.weight_x,
+		descender: map.descender,
+		ascender: map.ascender,
+		xHeight: map.xHeight,
+		topBearing: map.topBearing,
+		bottomBearing: map.bottomBearing
 	});
 };
 formsubfunc();

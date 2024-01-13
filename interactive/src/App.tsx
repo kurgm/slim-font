@@ -1,6 +1,7 @@
-import { FC, useSyncExternalStore } from "react";
+import { FC, useState, useSyncExternalStore } from "react";
+import { FontSetting } from "@kurgm/slim-font";
 
-import { Render, RenderProps } from "./components/Render";
+import { Render } from "./components/Render";
 
 const createExternalParam = <T,>(defaultValue: T) => {
   let currentValue = defaultValue;
@@ -25,14 +26,30 @@ const createExternalParam = <T,>(defaultValue: T) => {
   return { get, set, useExternalParam };
 };
 
-const { set: setRenderProps, useExternalParam: useRenderProps } =
-  createExternalParam<RenderProps | null>(null);
+const { set: setFontSetting, useExternalParam: useFontSetting } =
+  createExternalParam<FontSetting | null>(null);
 
-export { setRenderProps };
+export { setFontSetting };
 
 export const App: FC = () => {
-  const renderProps = useRenderProps();
+  const fontSetting = useFontSetting();
+  const [text, setText] = useState("Lorem ipsum");
 
-  if (!renderProps) return null;
-  return <Render {...renderProps} />;
+  if (!fontSetting) return null;
+  return (
+    <>
+      <Render fontSetting={fontSetting} text={text} />
+      <div>
+        テキスト:{" "}
+        <input
+          type="text"
+          name="text"
+          value={text}
+          onChange={(event) => {
+            setText(event.target.value);
+          }}
+        />
+      </div>
+    </>
+  );
 };
