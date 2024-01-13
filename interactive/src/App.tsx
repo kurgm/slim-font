@@ -24,7 +24,7 @@ export const App: FC = () => {
   );
 
   const onParamChange = (name: keyof InputParam, value: number) => {
-    setInputParam(clampInputParam({ ...inputParam, [name]: value }, name));
+    setInputParam(clampInputParam(inputParam, name, value));
   };
   const onPresetClick = (preset: Readonly<PresetMap>) => {
     setInputParam(preset.map);

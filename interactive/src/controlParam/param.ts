@@ -5,10 +5,11 @@ export type InputParam = Omit<FontSetting, "space_x"> & {
 };
 
 export function clampInputParam(
-  { ...map }: InputParam,
-  name?: keyof InputParam
+  prevMap: Readonly<InputParam>,
+  name: keyof InputParam,
+  value: number
 ): InputParam {
-  if (name) map[name] = Math.max(map[name], 1);
+  const map: InputParam = { ...prevMap, [name]: Math.max(value, 1) };
   if (name === "stem_interval") {
     map.weight_x = Math.min(map.weight_x, map.stem_interval);
   } else {
