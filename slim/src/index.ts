@@ -1,7 +1,7 @@
 import slimDatabase from "./slim_db.js";
 import type { SlimGlyphData } from "./slim_db.js";
 
-export type FontSetting = {
+export interface FontSetting {
 	weight_x: number;
 	weight_y: number;
 	space_x: number;
@@ -10,18 +10,18 @@ export type FontSetting = {
 	xHeight: number;
 	topBearing: number;
 	bottomBearing: number;
-};
+}
 
-export type RenderedGlyph = {
+export interface RenderedGlyph {
 	dList: string[];
 	offsetX: number;
 	advanceWidth: number;
-};
-export type RenderedText = {
+}
+export interface RenderedText {
 	glyphs: RenderedGlyph[];
 	width: number;
 	height: number;
-};
+}
 
 export class SlimError extends Error {
 	static {
@@ -61,10 +61,10 @@ export const setValues: (map: FontSetting) => {
 	function horipos (n: number) {
 		return (fontsetting.space_x + fontsetting.weight_x) * (n + 0.5);
 	}
-	function parsePosStr(str: string, default_unit: string = "w") {
+	function parsePosStr(str: string, default_unit = "w") {
 		if (/^\d/.test(str)) str = `+${str}`;
 		let res = 0.0;
-		const pattern = /([\+\-][0-9.]+)([xywmW]?)/y;
+		const pattern = /([+-][0-9.]+)([xywmW]?)/y;
 		while (pattern.lastIndex < str.length) {
 			const mobj = pattern.exec(str);
 			if (!mobj) throw new SlimError(`syntax error in parsing position: ${str}`);
@@ -123,12 +123,12 @@ export const setValues: (map: FontSetting) => {
 			afty
 		];
 	}
-	function slim2pathd(database: Record<string, SlimGlyphData>, glyphname: string, dx: number = 0.0, dy: number = 0.0): [d: string[], width: number] {
+	function slim2pathd(database: Record<string, SlimGlyphData>, glyphname: string, dx = 0.0, dy = 0.0): [d: string[], width: number] {
 		const glyphdata = database[glyphname];
 		const slimdata = glyphdata.slim;
 		const slim_d: string[] = [];
 		let max_w = horipos(-1);
-		type SlimLine = {
+		interface SlimLine {
 			x: number;
 			y: number;
 			arg: number;
@@ -138,7 +138,7 @@ export const setValues: (map: FontSetting) => {
 			pointEndR: [number, number];
 			pointEndL: [number, number];
 			pointStartL: [number, number];
-		};
+		}
 		for (const slimelem of slimdata) {
 			if (slimelem.charAt(0) === "#") {
 				const params = slimelem.split("#");

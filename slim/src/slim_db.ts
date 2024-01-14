@@ -1,8 +1,8 @@
-export type SlimGlyphData = {
+export interface SlimGlyphData {
   id?: string;
   width?: string;
   slim: string[];
-};
+}
 
 // generated at 2013-11-03T17:29
 const database: Record<string, SlimGlyphData> = {
