@@ -170,44 +170,32 @@ export const setValues: (map: FontSetting) => {
 			this.endEnding = {} as SlimLineEnding;
 		}
 
-		get pointStartR(): [number, number] {
+		calcPointStartRL(): [[number, number], [number, number]] {
 			switch (this.startEnding.type) {
 				case "override":
-					return this.startEnding.pointR;
-				case "0":
-					return processRounded0CornerAfl(this).pointStartR;
-				case "1":
-					return processRounded1CornerAfl(this).pointStartR;
+					return [this.startEnding.pointR, this.startEnding.pointL];
+				case "0": {
+					const result = processRounded0CornerAfl(this);
+					return [result.pointStartR, result.pointStartL];
+				}
+				case "1": {
+					const result = processRounded1CornerAfl(this);
+					return [result.pointStartR, result.pointStartL];
+				}
 			}
 		}
-		get pointEndR(): [number, number] {
+		calcPointEndRL(): [[number, number], [number, number]] {
 			switch (this.endEnding.type) {
 				case "override":
-					return this.endEnding.pointR;
-				case "0":
-					return processRounded0CornerBel(this).pointEndR;
-				case "1":
-					return processRounded1CornerBel(this).pointEndR;
-			}
-		}
-		get pointEndL(): [number, number] {
-			switch (this.endEnding.type) {
-				case "override":
-					return this.endEnding.pointL;
-				case "0":
-					return processRounded0CornerBel(this).pointEndL;
-				case "1":
-					return processRounded1CornerBel(this).pointEndL;
-			}
-		}
-		get pointStartL(): [number, number] {
-			switch (this.startEnding.type) {
-				case "override":
-					return this.startEnding.pointL;
-				case "0":
-					return processRounded0CornerAfl(this).pointStartL;
-				case "1":
-					return processRounded1CornerAfl(this).pointStartL;
+					return [this.endEnding.pointR, this.endEnding.pointL];
+				case "0": {
+					const result = processRounded0CornerBel(this);
+					return [result.pointEndR, result.pointEndL];
+				}
+				case "1": {
+					const result = processRounded1CornerBel(this);
+					return [result.pointEndR, result.pointEndL];
+				}
 			}
 		}
 	}
@@ -311,12 +299,14 @@ export const setValues: (map: FontSetting) => {
 				}
 			});
 			for (const line of slimLines) {
+				const [pointStartR, pointStartL] = line.calcPointStartRL();
+				const [pointEndR, pointEndL] = line.calcPointEndRL();
 				slim_d.push([
 					"M",
-					line.pointStartR.join(","),
-					line.pointEndR.join(","),
-					line.pointEndL.join(","),
-					line.pointStartL.join(","),
+					pointStartR.join(","),
+					pointEndR.join(","),
+					pointEndL.join(","),
+					pointStartL.join(","),
 					"z"
 				].join(" "));
 			}
