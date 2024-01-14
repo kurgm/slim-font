@@ -124,8 +124,8 @@ export const setValues: (map: FontSetting) => {
 		];
 	}
 	type SlimLineEnding =
-		// | { type: "0" }
-		// | { type: "1" }
+		| { type: "0" }
+		| { type: "1" }
 		| {
 			type: "override";
 			pointL: [number, number];
@@ -174,24 +174,40 @@ export const setValues: (map: FontSetting) => {
 			switch (this.startEnding.type) {
 				case "override":
 					return this.startEnding.pointR;
+				case "0":
+					return processRounded0CornerAfl(this).pointStartR;
+				case "1":
+					return processRounded1CornerAfl(this).pointStartR;
 			}
 		}
 		get pointEndR(): [number, number] {
 			switch (this.endEnding.type) {
 				case "override":
 					return this.endEnding.pointR;
+				case "0":
+					return processRounded0CornerBel(this).pointEndR;
+				case "1":
+					return processRounded1CornerBel(this).pointEndR;
 			}
 		}
 		get pointEndL(): [number, number] {
 			switch (this.endEnding.type) {
 				case "override":
 					return this.endEnding.pointL;
+				case "0":
+					return processRounded0CornerBel(this).pointEndL;
+				case "1":
+					return processRounded1CornerBel(this).pointEndL;
 			}
 		}
 		get pointStartL(): [number, number] {
 			switch (this.startEnding.type) {
 				case "override":
 					return this.startEnding.pointL;
+				case "0":
+					return processRounded0CornerAfl(this).pointStartL;
+				case "1":
+					return processRounded1CornerAfl(this).pointStartL;
 			}
 		}
 	}
@@ -250,37 +266,17 @@ export const setValues: (map: FontSetting) => {
 					}
 				} else if (pbety !== 1 && pafty !== 1) {
 					if (bel && pbety === 2) {
-						const result = processRounded1CornerBel(bel);
-						bel.endEnding = {
-							type: "override",
-							pointL: result.pointEndL,
-							pointR: result.pointEndR,
-						};
+						bel.endEnding = { type: "1" };
 					}
 					if (afl && pafty === 2) {
-						const result = processRounded1CornerAfl(afl);
-						afl.startEnding = {
-							type: "override",
-							pointL: result.pointStartL,
-							pointR: result.pointStartR,
-						};
+						afl.startEnding = { type: "1" };
 					}
 					//not rounded
 					if (bel && pbety === 0) {
-						const result = processRounded0CornerBel(bel);
-						bel.endEnding = {
-							type: "override",
-							pointL: result.pointEndL,
-							pointR: result.pointEndR,
-						};
+						bel.endEnding = { type: "0" };
 					}
 					if (afl && pafty === 0) {
-						const result = processRounded0CornerAfl(afl);
-						afl.startEnding = {
-							type: "override",
-							pointL: result.pointStartL,
-							pointR: result.pointStartR,
-						};
+						afl.startEnding = { type: "0" };
 					}
 					if (bel === null && afl === null)
 						slim_d.push([
@@ -308,20 +304,10 @@ export const setValues: (map: FontSetting) => {
 					"z"
 				].join(" "));
 				if (bel) {
-					const result = processRounded1CornerBel(bel);
-					bel.endEnding = {
-						type: "override",
-						pointL: result.pointEndL,
-						pointR: result.pointEndR,
-					};
+					bel.endEnding = { type: "1" };
 				}
 				if (afl) {
-					const result = processRounded1CornerAfl(afl);
-					afl.startEnding = {
-						type: "override",
-						pointL: result.pointStartL,
-						pointR: result.pointStartR,
-					};
+					afl.startEnding = { type: "1" };
 				}
 			});
 			for (const line of slimLines) {
