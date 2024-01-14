@@ -342,6 +342,8 @@ export const setValues = (fontsetting) => {
 			else if ((arg1 ===  0.5 && arg2 === 0.0) || (arg1 === 1.0 && arg2 === -0.5))
 				// left-bottom corner
 				xs =  1, ys = -1;
+			else
+				throw new SlimError(`unexpected corner: ${arg1}, ${arg2}`);
 			slim_d.push(pathCorner(xs, ys, px, py));
 			/** @type {[number, number]} */
 			const vert_outer = [
@@ -535,10 +537,10 @@ export const setValues = (fontsetting) => {
 		dx = dx || 0.0;
 		if (/\/[cC]ombining$/.test(glyphname))
 			return 0;
-		const glyphdata = database[glyphname];
-		if (!("width" in glyphdata))
+		const { width } = database[glyphname];
+		if (width === undefined)
 			return default_;
-		return parsePosStr(glyphdata.width, "w") + dx;
+		return parsePosStr(width, "w") + dx;
 	}
 	/**
 	 * @param {Record<string, SlimGlyphData>} database
