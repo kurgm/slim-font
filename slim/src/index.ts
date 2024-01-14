@@ -325,40 +325,12 @@ export const setValues: (map: FontSetting) => {
 			slimpoints.forEach(([px, py, pbety, pafty], j) => {
 				const bel = j !== 0          ? slimLines[j - 1] : null;
 				const afl = j !== pointc - 1 ? slimLines[j]     : null;
-				if (pbety === 1 && pafty === 1) {
-					if (bel && afl) {
-						const hv1 = bel.hv;
-						const hv2 = afl.hv;
-						if (hv1 && hv2 && hv1 !== hv2) {
-							//corner
-							const result = processRounded2Corner(bel, afl);
-							slim_d.push(result.path);
-							bel.endEnding = {
-								type: "override",
-								pointL: result.pointEndL,
-								pointR: result.pointEndR,
-							};
-							afl.startEnding = {
-								type: "override",
-								pointL: result.pointStartL,
-								pointR: result.pointStartR,
-							};
-							return;
-						}
+				if (pbety !== 1 && pafty !== 1) {
+					if (bel) {
+						bel.endEnding = pbety === 2 ? { type: "1" } : { type: "0" };
 					}
-				} else if (pbety !== 1 && pafty !== 1) {
-					if (bel && pbety === 2) {
-						bel.endEnding = { type: "1" };
-					}
-					if (afl && pafty === 2) {
-						afl.startEnding = { type: "1" };
-					}
-					//not rounded
-					if (bel && pbety === 0) {
-						bel.endEnding = { type: "0" };
-					}
-					if (afl && pafty === 0) {
-						afl.startEnding = { type: "0" };
+					if (afl) {
+						afl.startEnding = pafty === 2 ? { type: "1" } : { type: "0" };
 					}
 					if (bel === null && afl === null)
 						slim_d.push([
@@ -369,6 +341,22 @@ export const setValues: (map: FontSetting) => {
 							px - fontsetting.weight_x / 2, py + fontsetting.weight_y / 2,
 							"z"
 						].join(" "));
+					return;
+				}
+				if (pbety === 1 && pafty === 1 && bel && afl && bel.hv && afl.hv && bel.hv !== afl.hv) {
+					//corner
+					const result = processRounded2Corner(bel, afl);
+					slim_d.push(result.path);
+					bel.endEnding = {
+						type: "override",
+						pointL: result.pointEndL,
+						pointR: result.pointEndR,
+					};
+					afl.startEnding = {
+						type: "override",
+						pointL: result.pointStartL,
+						pointR: result.pointStartR,
+					};
 					return;
 				}
 				//round stroke
