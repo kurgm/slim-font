@@ -225,8 +225,7 @@ export const setValues: (map: FontSetting) => {
 		return [slim_d, getGlyphWidth(database, glyphname, max_w, dx)];
 
 		function processRounded1CornerBel(bel: SlimLine, px: number, py: number) {
-			const vx = bel.x;
-			const vy = bel.y;
+			const { vx, vy } = bel;
 			const k = 2.0 * Math.hypot(fontsetting.weight_x * vy, fontsetting.weight_y * vx);
 			const dx2 = fontsetting.weight_x ** 2 * vy / k;
 			const dy2 = fontsetting.weight_y ** 2 * vx / k;
@@ -241,8 +240,7 @@ export const setValues: (map: FontSetting) => {
 		}
 
 		function processRounded1CornerAfl(afl: SlimLine, px: number, py: number) {
-			const vx = afl.x;
-			const vy = afl.y;
+			const { vx, vy } = afl;
 			const k = 2.0 * Math.hypot(fontsetting.weight_x * vy, fontsetting.weight_y * vx);
 			const dx2 = fontsetting.weight_x ** 2 * vy / k;
 			const dy2 = fontsetting.weight_y ** 2 * vx / k;
@@ -332,8 +330,7 @@ export const setValues: (map: FontSetting) => {
 						py + signedY / 2.0
 					];
 				} else {
-					const vx = bel.x;
-					const vy = bel.y;
+					const { vx, vy } = bel;
 					const d = Math.hypot(fontsetting.weight_x * vy, fontsetting.weight_y * vx) / (2.0 * vy);
 					bel.pointEndR = [
 						px + signedY / (2.0 * Math.tan(arg)) - d,
@@ -366,8 +363,7 @@ export const setValues: (map: FontSetting) => {
 						py - signedY / 2.0
 					];
 				} else {
-					const vx = bel.x;
-					const vy = bel.y;
+					const { vx, vy } = bel;
 					const d = Math.hypot(fontsetting.weight_x * vy, fontsetting.weight_y * vx) / (2.0 * vx);
 					bel.pointEndR = [
 						px + signedX / 2.0,
@@ -396,8 +392,7 @@ export const setValues: (map: FontSetting) => {
 						py + signedY / 2.0
 					];
 				} else {
-					const vx = afl.x;
-					const vy = afl.y;
+					const { vx, vy } = afl;
 					const d = Math.hypot(fontsetting.weight_x * vy, fontsetting.weight_y * vx) / (2.0 * vy);
 					afl.pointStartR = [
 						px + signedY / (2.0 * Math.tan(arg)) - d,
@@ -429,8 +424,7 @@ export const setValues: (map: FontSetting) => {
 						py + signedY / 2.0
 					];
 				} else {
-					const vx = afl.x;
-					const vy = afl.y;
+					const { vx, vy } = afl;
 					const d = Math.hypot(fontsetting.weight_x * vy, fontsetting.weight_y * vx) / (2.0 * vx);
 					afl.pointStartR = [
 						px + signedX / 2.0,
@@ -485,8 +479,8 @@ export const setValues: (map: FontSetting) => {
 	return { renderText, renderTextSvg };
 };
 interface SlimLine {
-	x: number;
-	y: number;
+	vx: number;
+	vy: number;
 	arg: number;
 	isvert: boolean;
 	hv: 0 | 1 | 2;
@@ -496,7 +490,9 @@ interface SlimLine {
 	pointStartL: [number, number];
 }
 const createSlimLine = (p1x: number, p1y: number, p2x: number, p2y: number): SlimLine => {
-	const arg = Math.atan2(p2y - p1y, p2x - p1x);
+	const vx = p2x - p1x;
+	const vy = p2y - p1y;
+	const arg = Math.atan2(vy, vx);
 	const arg2 = Math.abs(arg / Math.PI);
 	const isvert = (0.25 < arg2) && (arg2 < 0.75);
 	let hv: 0 | 1 | 2;
@@ -507,11 +503,11 @@ const createSlimLine = (p1x: number, p1y: number, p2x: number, p2y: number): Sli
 	else
 		hv = 0;
 	return {
-		"x": p2x - p1x,
-		"y": p2y - p1y,
-		"arg": arg,
-		"isvert": isvert,
-		"hv": hv,
+		vx,
+		vy,
+		arg,
+		isvert,
+		hv,
 		pointStartR: [] as never as [number, number],
 		pointEndR: [] as never as [number, number],
 		pointEndL: [] as never as [number, number],
