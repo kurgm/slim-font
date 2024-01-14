@@ -73,28 +73,57 @@ export const setValues: (map: FontSetting) => {
 		}
 		return res;
 	}
-	function pathCorner(xScale: number, yScale: number, x: number, y: number) {
-		const isnotinv = xScale * yScale > 0;
-		return [
-			"M",
+	function pathCorner(xScale: number, yScale: number, x: number, y: number): {
+		vert_outer: [number, number];
+		vert_inner: [number, number];
+		hori_outer: [number, number];
+		hori_inner: [number, number];
+		isnotinv: boolean;
+		path: string;
+	} {
+		const vert_outer: [number, number] = [
 			xScale * (- fontsetting.weight_x / 2.0) + x,
-			yScale * (radius_outer - fontsetting.weight_y / 2.0) + y,
-			"a",
-			radius_outer, radius_outer,
-			"0", "0",
-			isnotinv ? "1" : "0",
-			xScale *  radius_outer,
-			yScale * -radius_outer,
-			"l",
-			"0", yScale * fontsetting.weight_y,
-			"a",
-			radius_inner, radius_inner,
-			"0", "0",
-			isnotinv ? "0" : "1",
-			xScale * -radius_inner,
-			yScale *  radius_inner,
-			"z"
-		].join(" ");
+			yScale * (radius_outer - fontsetting.weight_y / 2.0) + y
+		];
+		const vert_inner: [number, number] = [
+			xScale * (  fontsetting.weight_x / 2.0) + x,
+			yScale * (radius_inner + fontsetting.weight_y / 2.0) + y
+		];
+		const hori_outer: [number, number] = [
+			xScale * (radius_outer - fontsetting.weight_x / 2.0) + x,
+			yScale * (- fontsetting.weight_y / 2.0) + y
+		];
+		const hori_inner: [number, number] = [
+			xScale * (radius_outer - fontsetting.weight_x / 2.0) + x,
+			yScale * (  fontsetting.weight_y / 2.0) + y
+		];
+		const isnotinv = xScale * yScale > 0;
+		return {
+			vert_outer,
+			vert_inner,
+			hori_outer,
+			hori_inner,
+			isnotinv,
+			path: [
+				"M",
+				...vert_outer,
+				"a",
+				radius_outer, radius_outer,
+				"0", "0",
+				isnotinv ? "1" : "0",
+				xScale *  radius_outer,
+				yScale * -radius_outer,
+				"l",
+				"0", yScale * fontsetting.weight_y,
+				"a",
+				radius_inner, radius_inner,
+				"0", "0",
+				isnotinv ? "0" : "1",
+				xScale * -radius_inner,
+				yScale *  radius_inner,
+				"z"
+			].join(" "),
+		};
 	}
 	const typdic: Record<string, 0 | 1 | 2> = {
 		"s": 0,
@@ -495,26 +524,10 @@ export const setValues: (map: FontSetting) => {
 			xs =  1, ys = -1;
 		else
 			throw new SlimError(`unexpected corner: ${arg1}, ${arg2}`);
-		const path = pathCorner(xs, ys, px, py);
-		const vert_outer: [number, number] = [
-			xs * (- fontsetting.weight_x / 2.0) + px,
-			ys * (radius_outer - fontsetting.weight_y / 2.0) + py
-		];
-		const vert_inner: [number, number] = [
-			xs * (  fontsetting.weight_x / 2.0) + px,
-			ys * (radius_inner + fontsetting.weight_y / 2.0) + py
-		];
-		const hori_outer: [number, number] = [
-			xs * (radius_outer - fontsetting.weight_x / 2.0) + px,
-			ys * (- fontsetting.weight_y / 2.0) + py
-		];
-		const hori_inner: [number, number] = [
-			xs * (radius_outer - fontsetting.weight_x / 2.0) + px,
-			ys * (  fontsetting.weight_y / 2.0) + py
-		];
+		const { path, vert_outer, vert_inner, hori_outer, hori_inner, isnotinv } = pathCorner(xs, ys, px, py);
 		if (bel.hv === 1) {
 			//vert -> hori
-			if (xs * ys > 0) {
+			if (isnotinv) {
 				//left-top or right-bottom corner
 				return {
 					path,
@@ -535,7 +548,7 @@ export const setValues: (map: FontSetting) => {
 			}
 		} else {
 			//hori -> vert
-			if (xs * ys > 0) {
+			if (isnotinv) {
 				//left-top or right-bottom corner
 				return {
 					path,
