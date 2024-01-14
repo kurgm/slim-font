@@ -170,31 +170,183 @@ export const setValues: (map: FontSetting) => {
 			this.endEnding = {} as SlimLineEnding;
 		}
 
-		calcPointStartRL(): [[number, number], [number, number]] {
+		calcPointStartRL(): [pointStartR: [number, number], pointStartL: [number, number]] {
 			switch (this.startEnding.type) {
 				case "override":
 					return [this.startEnding.pointR, this.startEnding.pointL];
 				case "0": {
-					const result = processRounded0CornerAfl(this);
-					return [result.pointStartR, result.pointStartL];
+					const { startX: px, startY: py, arg } = this;
+					if (this.isvert) {
+						const signedX = -copysign(fontsetting.weight_x, arg);
+						const signedY = -copysign(fontsetting.weight_y, arg);
+						if (this.hv) {
+							return [
+								[
+									px + signedX / 2.0,
+									py + signedY / 2.0
+								],
+								[
+									px - signedX / 2.0,
+									py + signedY / 2.0
+								],
+							];
+						} else {
+							const { vx, vy } = this;
+							const d = Math.hypot(fontsetting.weight_x * vy, fontsetting.weight_y * vx) / (2.0 * vy);
+							return [
+								[
+									px + signedY / (2.0 * Math.tan(arg)) - d,
+									py + signedY / 2.0
+								],
+								[
+									px + signedY / (2.0 * Math.tan(arg)) + d,
+									py + signedY / 2.0
+								],
+							];
+						}
+					} else {
+						let signedX;
+						let signedY;
+						if (Math.abs(arg / Math.PI) > 0.5)
+							// leftwards
+							signedX =  fontsetting.weight_x,
+							signedY =  fontsetting.weight_y;
+						else
+							// rightwards
+							signedX = -fontsetting.weight_x,
+							signedY = -fontsetting.weight_y;
+						if (this.hv) {
+							return [
+								[
+									px + signedX / 2.0,
+									py - signedY / 2.0
+								],
+								[
+									px + signedX / 2.0,
+									py + signedY / 2.0
+								],
+							];
+						} else {
+							const { vx, vy } = this;
+							const d = Math.hypot(fontsetting.weight_x * vy, fontsetting.weight_y * vx) / (2.0 * vx);
+							return [
+								[
+									px + signedX / 2.0,
+									py + signedX * Math.tan(arg) / 2.0 + d
+								],
+								[
+									px + signedX / 2.0,
+									py + signedX * Math.tan(arg) / 2.0 - d
+								],
+							];
+						}
+					}
 				}
 				case "1": {
-					const result = processRounded1CornerAfl(this);
-					return [result.pointStartR, result.pointStartL];
+					const { startX: px, startY: py, vx, vy } = this;
+					const k = 2.0 * Math.hypot(fontsetting.weight_x * vy, fontsetting.weight_y * vx);
+					const dx2 = fontsetting.weight_x ** 2 * vy / k;
+					const dy2 = fontsetting.weight_y ** 2 * vx / k;
+					return [
+						[
+							px - dx2,
+							py + dy2
+						],
+						[
+							px + dx2,
+							py - dy2
+						],
+					];
 				}
 			}
 		}
-		calcPointEndRL(): [[number, number], [number, number]] {
+		calcPointEndRL(): [pointEndR: [number, number], pointEndL: [number, number]] {
 			switch (this.endEnding.type) {
 				case "override":
 					return [this.endEnding.pointR, this.endEnding.pointL];
 				case "0": {
-					const result = processRounded0CornerBel(this);
-					return [result.pointEndR, result.pointEndL];
+					const { endX: px, endY: py, arg } = this;
+					if (this.isvert) {
+						const signedX = copysign(fontsetting.weight_x, arg);
+						const signedY = copysign(fontsetting.weight_y, arg);
+						if (this.hv) {
+							return [
+								[
+									px - signedX / 2.0,
+									py + signedY / 2.0
+								],
+								[
+									px + signedX / 2.0,
+									py + signedY / 2.0
+								],
+							];
+						} else {
+							const { vx, vy } = this;
+							const d = Math.hypot(fontsetting.weight_x * vy, fontsetting.weight_y * vx) / (2.0 * vy);
+							return [
+								[
+									px + signedY / (2.0 * Math.tan(arg)) - d,
+									py + signedY / 2.0
+								],
+								[
+									px + signedY / (2.0 * Math.tan(arg)) + d,
+									py + signedY / 2.0
+								],
+							];
+						}
+					} else {
+						let signedX;
+						let signedY;
+						if (Math.abs(arg / Math.PI) > 0.5)
+							// leftwards
+							signedX = -fontsetting.weight_x,
+							signedY = -fontsetting.weight_y;
+						else
+							// rightwards
+							signedX =  fontsetting.weight_x,
+							signedY =  fontsetting.weight_y;
+						if (this.hv) {
+							return [
+								[
+									px + signedX / 2.0,
+									py + signedY / 2.0
+								],
+								[
+									px + signedX / 2.0,
+									py - signedY / 2.0
+								],
+							];
+						} else {
+							const { vx, vy } = this;
+							const d = Math.hypot(fontsetting.weight_x * vy, fontsetting.weight_y * vx) / (2.0 * vx);
+							return [
+								[
+									px + signedX / 2.0,
+									py + signedX * Math.tan(arg) / 2.0 + d
+								],
+								[
+									px + signedX / 2.0,
+									py + signedX * Math.tan(arg) / 2.0 - d
+								],
+							];
+						}
+					}
 				}
 				case "1": {
-					const result = processRounded1CornerBel(this);
-					return [result.pointEndR, result.pointEndL];
+					const { endX: px, endY: py, vx, vy } = this;
+					const k = 2.0 * Math.hypot(fontsetting.weight_x * vy, fontsetting.weight_y * vx);
+					const dx2 = fontsetting.weight_x ** 2 * vy / k;
+					const dy2 = fontsetting.weight_y ** 2 * vx / k;
+					return [
+						[
+							px - dx2,
+							py + dy2
+						],
+						[
+							px + dx2,
+							py - dy2
+						],
+					];
 				}
 			}
 		}
@@ -314,46 +466,6 @@ export const setValues: (map: FontSetting) => {
 		return [slim_d, getGlyphWidth(database, glyphname, max_w, dx)];
 	}
 
-	function processRounded1CornerBel(bel: SlimLine): {
-		pointEndR: [number, number];
-		pointEndL: [number, number];
-	} {
-		const { endX: px, endY: py, vx, vy } = bel;
-		const k = 2.0 * Math.hypot(fontsetting.weight_x * vy, fontsetting.weight_y * vx);
-		const dx2 = fontsetting.weight_x ** 2 * vy / k;
-		const dy2 = fontsetting.weight_y ** 2 * vx / k;
-		return {
-			pointEndR: [
-				px - dx2,
-				py + dy2
-			],
-			pointEndL: [
-				px + dx2,
-				py - dy2
-			],
-		};
-	}
-
-	function processRounded1CornerAfl(afl: SlimLine): {
-		pointStartR: [number, number];
-		pointStartL: [number, number];
-	} {
-		const { startX: px, startY: py, vx, vy } = afl;
-		const k = 2.0 * Math.hypot(fontsetting.weight_x * vy, fontsetting.weight_y * vx);
-		const dx2 = fontsetting.weight_x ** 2 * vy / k;
-		const dy2 = fontsetting.weight_y ** 2 * vx / k;
-		return {
-			pointStartR: [
-				px - dx2,
-				py + dy2
-			],
-			pointStartL: [
-				px + dx2,
-				py - dy2
-			],
-		};
-	}
-
 	function processRounded2Corner(bel: SlimLine, afl: SlimLine): {
 		path: string;
 		pointEndR: [number, number];
@@ -445,150 +557,6 @@ export const setValues: (map: FontSetting) => {
 		}
 	}
 
-	function processRounded0CornerBel(bel: SlimLine): {
-		pointEndR: [number, number];
-		pointEndL: [number, number];
-	} {
-		const { endX: px, endY: py, arg } = bel;
-		if (bel.isvert) {
-			const signedX = copysign(fontsetting.weight_x, arg);
-			const signedY = copysign(fontsetting.weight_y, arg);
-			if (bel.hv) {
-				return {
-					pointEndR: [
-						px - signedX / 2.0,
-						py + signedY / 2.0
-					],
-					pointEndL: [
-						px + signedX / 2.0,
-						py + signedY / 2.0
-					],
-				};
-			} else {
-				const { vx, vy } = bel;
-				const d = Math.hypot(fontsetting.weight_x * vy, fontsetting.weight_y * vx) / (2.0 * vy);
-				return {
-					pointEndR: [
-						px + signedY / (2.0 * Math.tan(arg)) - d,
-						py + signedY / 2.0
-					],
-					pointEndL: [
-						px + signedY / (2.0 * Math.tan(arg)) + d,
-						py + signedY / 2.0
-					],
-				};
-			}
-		} else {
-			let signedX;
-			let signedY;
-			if (Math.abs(arg / Math.PI) > 0.5)
-				// leftwards
-				signedX = -fontsetting.weight_x,
-				signedY = -fontsetting.weight_y;
-
-			else
-				// rightwards
-				signedX =  fontsetting.weight_x,
-				signedY =  fontsetting.weight_y;
-			if (bel.hv) {
-				return {
-					pointEndR: [
-						px + signedX / 2.0,
-						py + signedY / 2.0
-					],
-					pointEndL: [
-						px + signedX / 2.0,
-						py - signedY / 2.0
-					],
-				};
-			} else {
-				const { vx, vy } = bel;
-				const d = Math.hypot(fontsetting.weight_x * vy, fontsetting.weight_y * vx) / (2.0 * vx);
-				return {
-					pointEndR: [
-						px + signedX / 2.0,
-						py + signedX * Math.tan(arg) / 2.0 + d
-					],
-					pointEndL: [
-						px + signedX / 2.0,
-						py + signedX * Math.tan(arg) / 2.0 - d
-					],
-				};
-			}
-		}
-	}
-
-	function processRounded0CornerAfl(afl: SlimLine): {
-		pointStartR: [number, number];
-		pointStartL: [number, number];
-	} {
-		const { startX: px, startY: py, arg } = afl;
-		if (afl.isvert) {
-			const signedX = -copysign(fontsetting.weight_x, arg);
-			const signedY = -copysign(fontsetting.weight_y, arg);
-			if (afl.hv) {
-				return {
-					pointStartR: [
-						px + signedX / 2.0,
-						py + signedY / 2.0
-					],
-					pointStartL: [
-						px - signedX / 2.0,
-						py + signedY / 2.0
-					],
-				};
-			} else {
-				const { vx, vy } = afl;
-				const d = Math.hypot(fontsetting.weight_x * vy, fontsetting.weight_y * vx) / (2.0 * vy);
-				return {
-					pointStartR: [
-						px + signedY / (2.0 * Math.tan(arg)) - d,
-						py + signedY / 2.0
-					],
-					pointStartL: [
-						px + signedY / (2.0 * Math.tan(arg)) + d,
-						py + signedY / 2.0
-					],
-				};
-			}
-		} else {
-			let signedX;
-			let signedY;
-			if (Math.abs(arg / Math.PI) > 0.5)
-				// leftwards
-				signedX =  fontsetting.weight_x,
-				signedY =  fontsetting.weight_y;
-			else
-				// rightwards
-				signedX = -fontsetting.weight_x,
-				signedY = -fontsetting.weight_y;
-			if (afl.hv) {
-				return {
-					pointStartR: [
-						px + signedX / 2.0,
-						py - signedY / 2.0
-					],
-					pointStartL: [
-						px + signedX / 2.0,
-						py + signedY / 2.0
-					],
-				};
-			} else {
-				const { vx, vy } = afl;
-				const d = Math.hypot(fontsetting.weight_x * vy, fontsetting.weight_y * vx) / (2.0 * vx);
-				return {
-					pointStartR: [
-						px + signedX / 2.0,
-						py + signedX * Math.tan(arg) / 2.0 + d
-					],
-					pointStartL: [
-						px + signedX / 2.0,
-						py + signedX * Math.tan(arg) / 2.0 - d
-					],
-				};
-			}
-		}
-	}
 	function getGlyphWidth(database: Record<string, SlimGlyphData>, glyphname: string, default_: number, dx: number) {
 		dx = dx || 0.0;
 		if (/\/[cC]ombining$/.test(glyphname))
