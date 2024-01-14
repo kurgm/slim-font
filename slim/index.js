@@ -146,6 +146,19 @@ export const setValues = (fontsetting) => {
 		/** @type {string[]} */
 		const slim_d = [];
 		let max_w = horipos(-1);
+		/**
+		 * @typedef {{
+		 *   x: number;
+		 *   y: number;
+		 *   arg: number;
+		 *   isvert: boolean;
+		 *   hv: 0 | 1 | 2;
+		 *   pointStartR: [number, number];
+		 *   pointEndR: [number, number];
+		 *   pointEndL: [number, number];
+		 *   pointStartL: [number, number];
+		 * }} SlimLine
+		 */
 		for (const slimelem of slimdata) {
 			if (slimelem.charAt(0) === "#") {
 				const params = slimelem.split("#");
@@ -164,7 +177,7 @@ export const setValues = (fontsetting) => {
 				max_w = Math.max(max_w, px + (fontsetting.weight_x + fontsetting.space_x) / 2.0);
 			}
 			const pointc = slimpoints.length;
-			/** @type {{ x: number, y: number, arg: number, isvert: boolean, hv: 0 | 1 | 2, pointStartR: [number, number], pointEndR: [number, number], pointEndL: [number, number], pointStartL: [number, number] }[]} */
+			/** @type {SlimLine[]} */
 			const line = [];
 			for (let j = 0; j < pointc - 1; j++) {
 				const [p1x, p1y] = slimpoints[j];
@@ -265,7 +278,7 @@ export const setValues = (fontsetting) => {
 		return [slim_d, getGlyphWidth(database, glyphname, max_w, dx)];
 
 		/**
-		 * @param {{ x: number; y: number; arg: number; isvert: boolean; hv: 0 | 2 | 1; pointStartR: [number, number]; pointEndR: [number, number]; pointEndL: [number, number]; pointStartL: [number, number]; }} bel
+		 * @param {SlimLine} bel
 		 * @param {number} px
 		 * @param {number} py
 		 */
@@ -286,7 +299,7 @@ export const setValues = (fontsetting) => {
 		}
 
 		/**
-		 * @param {{ x: number; y: number; arg: number; isvert: boolean; hv: 0 | 2 | 1; pointStartR: [number, number]; pointEndR: [number, number]; pointEndL: [number, number]; pointStartL: [number, number]; }} afl
+		 * @param {SlimLine} afl
 		 * @param {number} px
 		 * @param {number} py
 		 */
@@ -307,8 +320,8 @@ export const setValues = (fontsetting) => {
 		}
 
 		/**
-		 * @param {{ x: number; y: number; arg: number; isvert: boolean; hv: 0 | 2 | 1; pointStartR: [number, number]; pointEndR: [number, number]; pointEndL: [number, number]; pointStartL: [number, number]; }} bel
-		 * @param {{ x: number; y: number; arg: number; isvert: boolean; hv: 0 | 2 | 1; pointStartR: [number, number]; pointEndR: [number, number]; pointEndL: [number, number]; pointStartL: [number, number]; }} afl
+		 * @param {SlimLine} bel
+		 * @param {SlimLine} afl
 		 * @param {number} px
 		 * @param {number} py
 		 */
@@ -376,7 +389,7 @@ export const setValues = (fontsetting) => {
 		}
 
 		/**
-		 * @param {{ x: number; y: number; arg: number; isvert: boolean; hv: 0 | 2 | 1; pointStartR: [number, number]; pointEndR: [number, number]; pointEndL: [number, number]; pointStartL: [number, number]; }} bel
+		 * @param {SlimLine} bel
 		 * @param {number} px
 		 * @param {number} py
 		 */
@@ -445,7 +458,7 @@ export const setValues = (fontsetting) => {
 		}
 
 		/**
-		 * @param {{ x: number; y: number; arg: number; isvert: boolean; hv: 0 | 2 | 1; pointStartR: [number, number]; pointEndR: [number, number]; pointEndL: [number, number]; pointStartL: [number, number]; }} afl
+		 * @param {SlimLine} afl
 		 * @param {number} px
 		 * @param {number} py
 		 */
