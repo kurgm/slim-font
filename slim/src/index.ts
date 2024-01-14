@@ -1,30 +1,43 @@
 import slimDatabase from "./slim_db.js";
+import type { SlimGlyphData } from "./slim_db.js";
 
-/**
- * @typedef {import("./index.d.ts").FontSetting} FontSetting
- * @typedef {import("./index.d.ts").RenderedGlyph} RenderedGlyph
- * @typedef {import("./index.d.ts").RenderedText} RenderedText
- * @typedef {import("./slim_db.js").SlimGlyphData} SlimGlyphData
- */
+export type FontSetting = {
+	weight_x: number;
+	weight_y: number;
+	space_x: number;
+	descender: number;
+	ascender: number;
+	xHeight: number;
+	topBearing: number;
+	bottomBearing: number;
+};
+
+export type RenderedGlyph = {
+	dList: string[];
+	offsetX: number;
+	advanceWidth: number;
+};
+export type RenderedText = {
+	glyphs: RenderedGlyph[];
+	width: number;
+	height: number;
+};
 
 export class SlimError extends Error {
 	static {
 		this.prototype.name = "SlimError";
 	}
 }
-/**
- * @param {number} a 
- * @param {number} b 
- */
-function copysign (a, b) {
+function copysign (a: number, b: number) {
 	return a * b < 0 ? -a : a;
 }
-/**
- * @type {typeof import('./index.d.ts').setValues}
- */
-export const setValues = (fontsetting) => {
-	/** @type {Record<string, number>} */
-	const vertpos = {
+
+
+export const setValues: (map: FontSetting) => {
+	renderText: (string: string) => RenderedText;
+	renderTextSvg: (string: string) => string;
+} = (fontsetting) => {
+	const vertpos: Record<string, number> = {
 		"t": fontsetting.topBearing + fontsetting.weight_y / 2.0,
 		"b": fontsetting.topBearing + fontsetting.ascender - fontsetting.weight_y / 2.0,
 		"x": fontsetting.topBearing + fontsetting.ascender - fontsetting.xHeight + fontsetting.weight_y / 2.0,
@@ -36,8 +49,7 @@ export const setValues = (fontsetting) => {
 		"g": fontsetting.topBearing + fontsetting.ascender + (fontsetting.descender - fontsetting.xHeight) / 2.0,
 		"f": fontsetting.topBearing + (fontsetting.ascender - fontsetting.xHeight) / 2.0
 	};
-	/** @type {Record<string, number>} */
-	const unit_dict = {
+	const unit_dict: Record<string, number> = {
 		"x": fontsetting.weight_x,
 		"y": fontsetting.weight_y,
 		"w": fontsetting.space_x + fontsetting.weight_x,
@@ -46,17 +58,10 @@ export const setValues = (fontsetting) => {
 	};
 	const radius_inner = fontsetting.space_x / 2.0;
 	const radius_outer = fontsetting.weight_x + radius_inner;
-	/**
-	 * @param {number} n
-	 */
-	function horipos (n) {
+	function horipos (n: number) {
 		return (fontsetting.space_x + fontsetting.weight_x) * (n + 0.5);
 	}
-	/**
-	 * @param {string} str
-	 * @param {string} [default_unit]
-	 */
-	function parsePosStr(str, default_unit = "w") {
+	function parsePosStr(str: string, default_unit: string = "w") {
 		if (/^\d/.test(str)) str = `+${str}`;
 		let res = 0.0;
 		const pattern = /([\+\-][0-9.]+)([xywmW]?)/y;
@@ -68,13 +73,7 @@ export const setValues = (fontsetting) => {
 		}
 		return res;
 	}
-	/**
-	 * @param {number} xScale
-	 * @param {number} yScale
-	 * @param {number} x
-	 * @param {number} y
-	 */
-	function pathCorner(xScale, yScale, x, y) {
+	function pathCorner(xScale: number, yScale: number, x: number, y: number) {
 		const isnotinv = xScale * yScale > 0;
 		return [
 			"M",
@@ -97,29 +96,20 @@ export const setValues = (fontsetting) => {
 			"z"
 		].join(" ");
 	}
-	/** @type {Record<string, 0 | 1 | 2>} */
-	const typdic = {
+	const typdic: Record<string, 0 | 1 | 2> = {
 		"s": 0,
 		"r": 1,
 		"b": 2
 	};
-	/**
-	 * @param {string} slimpoint
-	 * @param {number} dx
-	 * @param {number} dy
-	 * @returns {[x: number, y: number, bety: 0 | 1 | 2, afty: 0 | 1 | 2]}
-	 */
-	function slimParsepoint(slimpoint, dx, dy) {
+	function slimParsepoint(slimpoint: string, dx: number, dy: number): [x: number, y: number, bety: 0 | 1 | 2, afty: 0 | 1 | 2] {
 		dx = dx || 0.0;
 		dy = dy || 0.0;
 		const mobj = slimpoint.match(/^([srb]{0,2})([tbxdmgfyMTB])([^,]*),([^,]+)$/);
 		if (!mobj) throw new SlimError(`syntax error: ${slimpoint}`);
 		const [, typ, pos, y, x] = mobj;
 		const typlen = typ.length;
-		/** @type {0 | 1 | 2} */
-		let bety;
-		/** @type {0 | 1 | 2} */
-		let afty;
+		let bety: 0 | 1 | 2;
+		let afty: 0 | 1 | 2;
 		if (typlen === 0)
 			bety = afty = 0;
 		else if (typlen === 1)
@@ -133,32 +123,22 @@ export const setValues = (fontsetting) => {
 			afty
 		];
 	}
-	/**
-	 * @param {Record<string, SlimGlyphData>} database
-	 * @param {string} glyphname
-	 * @param {number} [dx]
-	 * @param {number} [dy]
-	 * @returns {[d: string[], width: number]}
-	 */
-	function slim2pathd(database, glyphname, dx = 0.0, dy = 0.0) {
+	function slim2pathd(database: Record<string, SlimGlyphData>, glyphname: string, dx: number = 0.0, dy: number = 0.0): [d: string[], width: number] {
 		const glyphdata = database[glyphname];
 		const slimdata = glyphdata.slim;
-		/** @type {string[]} */
-		const slim_d = [];
+		const slim_d: string[] = [];
 		let max_w = horipos(-1);
-		/**
-		 * @typedef {{
-		 *   x: number;
-		 *   y: number;
-		 *   arg: number;
-		 *   isvert: boolean;
-		 *   hv: 0 | 1 | 2;
-		 *   pointStartR: [number, number];
-		 *   pointEndR: [number, number];
-		 *   pointEndL: [number, number];
-		 *   pointStartL: [number, number];
-		 * }} SlimLine
-		 */
+		type SlimLine = {
+			x: number;
+			y: number;
+			arg: number;
+			isvert: boolean;
+			hv: 0 | 1 | 2;
+			pointStartR: [number, number];
+			pointEndR: [number, number];
+			pointEndL: [number, number];
+			pointStartL: [number, number];
+		};
 		for (const slimelem of slimdata) {
 			if (slimelem.charAt(0) === "#") {
 				const params = slimelem.split("#");
@@ -177,16 +157,14 @@ export const setValues = (fontsetting) => {
 				max_w = Math.max(max_w, px + (fontsetting.weight_x + fontsetting.space_x) / 2.0);
 			}
 			const pointc = slimpoints.length;
-			/** @type {SlimLine[]} */
-			const line = [];
+			const line: SlimLine[] = [];
 			for (let j = 0; j < pointc - 1; j++) {
 				const [p1x, p1y] = slimpoints[j];
 				const [p2x, p2y] = slimpoints[j + 1];
 				const arg = Math.atan2(p2y - p1y, p2x - p1x);
 				const arg2 = Math.abs(arg / Math.PI);
 				const isvert = (0.25 < arg2) && (arg2 < 0.75);
-				/** @type {0 | 1 | 2} */
-				let hv;
+				let hv: 0 | 1 | 2;
 				if (arg2 === 0.5)
 					hv = 1; //vert
 				else if (arg2 === 0.0 || arg2 === 1.0)
@@ -199,10 +177,10 @@ export const setValues = (fontsetting) => {
 					"arg": arg,
 					"isvert": isvert,
 					"hv": hv,
-					pointStartR: [],
-					pointEndR: [],
-					pointEndL: [],
-					pointStartL: [],
+					pointStartR: [] as never as [number, number],
+					pointEndR: [] as never as [number, number],
+					pointEndL: [] as never as [number, number],
+					pointStartL: [] as never as [number, number],
 				});
 			}
 			slimpoints.forEach(([px, py, pbety, pafty], j) => {
@@ -277,12 +255,7 @@ export const setValues = (fontsetting) => {
 		}
 		return [slim_d, getGlyphWidth(database, glyphname, max_w, dx)];
 
-		/**
-		 * @param {SlimLine} bel
-		 * @param {number} px
-		 * @param {number} py
-		 */
-		function processRounded1CornerBel(bel, px, py) {
+		function processRounded1CornerBel(bel: SlimLine, px: number, py: number) {
 			const vx = bel.x;
 			const vy = bel.y;
 			const k = 2.0 * Math.hypot(fontsetting.weight_x * vy, fontsetting.weight_y * vx);
@@ -298,12 +271,7 @@ export const setValues = (fontsetting) => {
 			];
 		}
 
-		/**
-		 * @param {SlimLine} afl
-		 * @param {number} px
-		 * @param {number} py
-		 */
-		function processRounded1CornerAfl(afl, px, py) {
+		function processRounded1CornerAfl(afl: SlimLine, px: number, py: number) {
 			const vx = afl.x;
 			const vy = afl.y;
 			const k = 2.0 * Math.hypot(fontsetting.weight_x * vy, fontsetting.weight_y * vx);
@@ -319,13 +287,7 @@ export const setValues = (fontsetting) => {
 			];
 		}
 
-		/**
-		 * @param {SlimLine} bel
-		 * @param {SlimLine} afl
-		 * @param {number} px
-		 * @param {number} py
-		 */
-		function processRounded2Corner(bel, afl, px, py) {
+		function processRounded2Corner(bel: SlimLine, afl: SlimLine, px: number, py: number) {
 			const arg1 = bel.arg / Math.PI;
 			const arg2 = afl.arg / Math.PI;
 			let xs;
@@ -345,23 +307,19 @@ export const setValues = (fontsetting) => {
 			else
 				throw new SlimError(`unexpected corner: ${arg1}, ${arg2}`);
 			slim_d.push(pathCorner(xs, ys, px, py));
-			/** @type {[number, number]} */
-			const vert_outer = [
+			const vert_outer: [number, number] = [
 				xs * (- fontsetting.weight_x / 2.0) + px,
 				ys * (radius_outer - fontsetting.weight_y / 2.0) + py
 			];
-			/** @type {[number, number]} */
-			const vert_inner = [
+			const vert_inner: [number, number] = [
 				xs * (  fontsetting.weight_x / 2.0) + px,
 				ys * (radius_inner + fontsetting.weight_y / 2.0) + py
 			];
-			/** @type {[number, number]} */
-			const hori_outer = [
+			const hori_outer: [number, number] = [
 				xs * (radius_outer - fontsetting.weight_x / 2.0) + px,
 				ys * (- fontsetting.weight_y / 2.0) + py
 			];
-			/** @type {[number, number]} */
-			const hori_inner = [
+			const hori_inner: [number, number] = [
 				xs * (radius_outer - fontsetting.weight_x / 2.0) + px,
 				ys * (  fontsetting.weight_y / 2.0) + py
 			];
@@ -390,12 +348,7 @@ export const setValues = (fontsetting) => {
 			}
 		}
 
-		/**
-		 * @param {SlimLine} bel
-		 * @param {number} px
-		 * @param {number} py
-		 */
-		function processRounded0CornerBel(bel, px, py) {
+		function processRounded0CornerBel(bel: SlimLine, px: number, py: number) {
 			const arg = bel.arg;
 			if (bel.isvert) {
 				const signedX = copysign(fontsetting.weight_x, arg);
@@ -459,12 +412,7 @@ export const setValues = (fontsetting) => {
 			}
 		}
 
-		/**
-		 * @param {SlimLine} afl
-		 * @param {number} px
-		 * @param {number} py
-		 */
-		function processRounded0CornerAfl(afl, px, py) {
+		function processRounded0CornerAfl(afl: SlimLine, px: number, py: number) {
 			const arg = afl.arg;
 			if (afl.isvert) {
 				const signedX = -copysign(fontsetting.weight_x, arg);
@@ -527,13 +475,7 @@ export const setValues = (fontsetting) => {
 			}
 		}
 	}
-	/**
-	 * @param {Record<string, SlimGlyphData>} database
-	 * @param {string} glyphname
-	 * @param {number} default_
-	 * @param {number} dx
-	 */
-	function getGlyphWidth(database, glyphname, default_, dx) {
+	function getGlyphWidth(database: Record<string, SlimGlyphData>, glyphname: string, default_: number, dx: number) {
 		dx = dx || 0.0;
 		if (/\/[cC]ombining$/.test(glyphname))
 			return 0;
@@ -542,22 +484,12 @@ export const setValues = (fontsetting) => {
 			return default_;
 		return parsePosStr(width, "w") + dx;
 	}
-	/**
-	 * @param {Record<string, SlimGlyphData>} database
-	 * @param {string} c
-	 */
-	function char2glyphname(database, c) {
-		const name = `uni${c.codePointAt(0).toString(16).padStart(4, "0")}`;
+	function char2glyphname(database: Record<string, SlimGlyphData>, c: string) {
+		const name = `uni${c.codePointAt(0)!.toString(16).padStart(4, "0")}`;
 		return database[name] ? name : ".notdef";
 	}
-	/**
-	 * @param {string} string
-	 * @param {Record<string, SlimGlyphData>} [database]
-	 * @returns {RenderedText}
-	 */
-	const renderText = (string, database = slimDatabase) => {
-		/** @type {RenderedGlyph[]} */
-		const glyphs = [];
+	const renderText = (string: string, database: Record<string, SlimGlyphData> = slimDatabase): RenderedText => {
+		const glyphs: RenderedGlyph[] = [];
 		let offsetX = 0.0;
 		for (const char of string) {
 			const c = char2glyphname(database, char);
@@ -575,12 +507,7 @@ export const setValues = (fontsetting) => {
 			width: offsetX,
 		};
 	}
-	/**
-	 * @param {string} string
-	 * @param {Record<string, SlimGlyphData>} [database]
-	 * @returns {string}
-	 */
-	const renderTextSvg = (string, database = slimDatabase) => {
+	const renderTextSvg = (string: string, database: Record<string, SlimGlyphData> = slimDatabase): string => {
 		const { glyphs, width: svglist_x, height: lineHeight } = renderText(string, database);
 		const g_elems = glyphs.map(({ dList, offsetX }) => `<g transform="translate(${offsetX},0)">${dList.map((d) => `<path d="${d}" />`).join("")}</g>`);
 		return `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" viewBox="0 0 ${svglist_x} ${lineHeight}" preserveAspectRatio="xMinYMid meet" id="svg">${g_elems.join("")}</svg>`;

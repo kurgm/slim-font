@@ -1,16 +1,11 @@
-/**
- * @typedef {{
- *  id?: string,
- *  width?: string,
- *  slim: string[],
- * }} SlimGlyphData
- */
+export type SlimGlyphData = {
+  id?: string;
+  width?: string;
+  slim: string[];
+};
 
-/**
- * @type {Record<string, SlimGlyphData>}
- */
 // generated at 2013-11-03T17:29
-export default {
+const database: Record<string, SlimGlyphData> = {
 ".notdef":{"id":"notdef","slim":["t,0 t,2 b,2 b,0 t,0","bt,0 bb,2","bt,2 bb,0"]},
 "uni0020":{"width":"1","slim":[]},
 "uni0021":{"slim":["t,0 b-1-1x,0","b,0"]},
@@ -1165,3 +1160,4 @@ export default {
 "uni1ef4":{"slim":["#uni0059","#uni0323/Combining#0.5"]},
 "uni1ef5":{"slim":["#uni0079","#uni0323/combining#0.5"]}
 };
+export default database;

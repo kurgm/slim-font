@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "composite": true,
+    "declaration": true,
+    "declarationMap": true,
+    "declarationDir": "dist",
+    "outDir": "dist",
+    "rootDir": "src",
+  },
+  "include": ["src"],
+  "extends": "@tsconfig/node-lts/tsconfig.json"
+}

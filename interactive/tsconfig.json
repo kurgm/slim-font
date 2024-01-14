@@ -12,5 +12,10 @@
     "strict": true,
     "skipLibCheck": true
   },
-  "include": ["src"]
+  "include": ["src"],
+  "references": [
+    {
+      "path": "../slim/tsconfig.json"
+    }
+  ]
 }
