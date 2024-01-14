@@ -161,23 +161,36 @@ export const setValues: (map: FontSetting) => {
 						const hv2 = afl.hv;
 						if (hv1 && hv2 && hv1 !== hv2) {
 							//corner
-							processRounded2Corner(bel, afl);
+							const result = processRounded2Corner(bel, afl);
+							slim_d.push(result.path);
+							bel.pointEndL = result.pointEndL;
+							bel.pointEndR = result.pointEndR;
+							afl.pointStartL = result.pointStartL;
+							afl.pointStartR = result.pointStartR;
 							return;
 						}
 					}
 				} else if (pbety !== 1 && pafty !== 1) {
 					if (bel && pbety === 2) {
-						processRounded1CornerBel(bel);
+						const result = processRounded1CornerBel(bel);
+						bel.pointEndL = result.pointEndL;
+						bel.pointEndR = result.pointEndR;
 					}
 					if (afl && pafty === 2) {
-						processRounded1CornerAfl(afl);
+						const result = processRounded1CornerAfl(afl);
+						afl.pointStartL = result.pointStartL;
+						afl.pointStartR = result.pointStartR;
 					}
 					//not rounded
 					if (bel && pbety === 0) {
-						processRounded0CornerBel(bel);
+						const result = processRounded0CornerBel(bel);
+						bel.pointEndL = result.pointEndL;
+						bel.pointEndR = result.pointEndR;
 					}
 					if (afl && pafty === 0) {
-						processRounded0CornerAfl(afl);
+						const result = processRounded0CornerAfl(afl);
+						afl.pointStartL = result.pointStartL;
+						afl.pointStartR = result.pointStartR;
 					}
 					if (bel === null && afl === null)
 						slim_d.push([
@@ -205,10 +218,14 @@ export const setValues: (map: FontSetting) => {
 					"z"
 				].join(" "));
 				if (bel) {
-					processRounded1CornerBel(bel);
+					const result = processRounded1CornerBel(bel);
+					bel.pointEndL = result.pointEndL;
+					bel.pointEndR = result.pointEndR;
 				}
 				if (afl) {
-					processRounded1CornerAfl(afl);
+					const result = processRounded1CornerAfl(afl);
+					afl.pointStartL = result.pointStartL;
+					afl.pointStartR = result.pointStartR;
 				}
 			});
 			for (const line of slimLines) {
@@ -224,37 +241,53 @@ export const setValues: (map: FontSetting) => {
 		}
 		return [slim_d, getGlyphWidth(database, glyphname, max_w, dx)];
 
-		function processRounded1CornerBel(bel: SlimLine) {
+		function processRounded1CornerBel(bel: SlimLine): {
+			pointEndR: [number, number];
+			pointEndL: [number, number];
+		} {
 			const { endX: px, endY: py, vx, vy } = bel;
 			const k = 2.0 * Math.hypot(fontsetting.weight_x * vy, fontsetting.weight_y * vx);
 			const dx2 = fontsetting.weight_x ** 2 * vy / k;
 			const dy2 = fontsetting.weight_y ** 2 * vx / k;
-			bel.pointEndR = [
-				px - dx2,
-				py + dy2
-			];
-			bel.pointEndL = [
-				px + dx2,
-				py - dy2
-			];
+			return {
+				pointEndR: [
+					px - dx2,
+					py + dy2
+				],
+				pointEndL: [
+					px + dx2,
+					py - dy2
+				],
+			};
 		}
 
-		function processRounded1CornerAfl(afl: SlimLine) {
+		function processRounded1CornerAfl(afl: SlimLine): {
+			pointStartR: [number, number];
+			pointStartL: [number, number];
+		} {
 			const { startX: px, startY: py, vx, vy } = afl;
 			const k = 2.0 * Math.hypot(fontsetting.weight_x * vy, fontsetting.weight_y * vx);
 			const dx2 = fontsetting.weight_x ** 2 * vy / k;
 			const dy2 = fontsetting.weight_y ** 2 * vx / k;
-			afl.pointStartR = [
-				px - dx2,
-				py + dy2
-			];
-			afl.pointStartL = [
-				px + dx2,
-				py - dy2
-			];
+			return {
+				pointStartR: [
+					px - dx2,
+					py + dy2
+				],
+				pointStartL: [
+					px + dx2,
+					py - dy2
+				],
+			};
 		}
 
-		function processRounded2Corner(bel: SlimLine, afl: SlimLine) {
+		function processRounded2Corner(bel: SlimLine, afl: SlimLine): {
+			path: string;
+			pointEndR: [number, number];
+			pointEndL: [number, number];
+			pointStartR: [number, number];
+			pointStartL: [number, number];
+		} {
 			const { endX: px, endY: py } = bel;
 			if (px !== afl.startX || py !== afl.startY) {
 				throw new SlimError(`assertion failed: (${px}, ${py}) !== (${afl.startX}, ${afl.startY})`);
@@ -277,7 +310,7 @@ export const setValues: (map: FontSetting) => {
 				xs =  1, ys = -1;
 			else
 				throw new SlimError(`unexpected corner: ${arg1}, ${arg2}`);
-			slim_d.push(pathCorner(xs, ys, px, py));
+			const path = pathCorner(xs, ys, px, py);
 			const vert_outer: [number, number] = [
 				xs * (- fontsetting.weight_x / 2.0) + px,
 				ys * (radius_outer - fontsetting.weight_y / 2.0) + py
@@ -298,52 +331,79 @@ export const setValues: (map: FontSetting) => {
 				//vert -> hori
 				if (xs * ys > 0) {
 					//left-top or right-bottom corner
-					bel.pointEndR = vert_inner, bel.pointEndL = vert_outer;
-					afl.pointStartR = hori_inner, afl.pointStartL = hori_outer;
+					return {
+						path,
+						pointEndR: vert_inner,
+						pointEndL: vert_outer,
+						pointStartR: hori_inner,
+						pointStartL: hori_outer,
+					};
 				} else {
 					//left-bottom or right-top corner
-					bel.pointEndR = vert_outer, bel.pointEndL = vert_inner;
-					afl.pointStartR = hori_outer, afl.pointStartL = hori_inner;
+					return {
+						path,
+						pointEndR: vert_outer,
+						pointEndL: vert_inner,
+						pointStartR: hori_outer,
+						pointStartL: hori_inner,
+					};
 				}
 			} else {
 				//hori -> vert
 				if (xs * ys > 0) {
 					//left-top or right-bottom corner
-					bel.pointEndR = hori_outer, bel.pointEndL = hori_inner;
-					afl.pointStartR = vert_outer, afl.pointStartL = vert_inner;
+					return {
+						path,
+						pointEndR: hori_outer,
+						pointEndL: hori_inner,
+						pointStartR: vert_outer,
+						pointStartL: vert_inner,
+					};
 				} else {
 					//left-bottom or right-top corner
-					bel.pointEndR = hori_inner, bel.pointEndL = hori_outer;
-					afl.pointStartR = vert_inner, afl.pointStartL = vert_outer;
+					return {
+						path,
+						pointEndR: hori_inner,
+						pointEndL: hori_outer,
+						pointStartR: vert_inner,
+						pointStartL: vert_outer,
+					};
 				}
 			}
 		}
 
-		function processRounded0CornerBel(bel: SlimLine) {
+		function processRounded0CornerBel(bel: SlimLine): {
+			pointEndR: [number, number];
+			pointEndL: [number, number];
+		} {
 			const { endX: px, endY: py, arg } = bel;
 			if (bel.isvert) {
 				const signedX = copysign(fontsetting.weight_x, arg);
 				const signedY = copysign(fontsetting.weight_y, arg);
 				if (bel.hv) {
-					bel.pointEndR = [
-						px - signedX / 2.0,
-						py + signedY / 2.0
-					];
-					bel.pointEndL = [
-						px + signedX / 2.0,
-						py + signedY / 2.0
-					];
+					return {
+						pointEndR: [
+							px - signedX / 2.0,
+							py + signedY / 2.0
+						],
+						pointEndL: [
+							px + signedX / 2.0,
+							py + signedY / 2.0
+						],
+					};
 				} else {
 					const { vx, vy } = bel;
 					const d = Math.hypot(fontsetting.weight_x * vy, fontsetting.weight_y * vx) / (2.0 * vy);
-					bel.pointEndR = [
-						px + signedY / (2.0 * Math.tan(arg)) - d,
-						py + signedY / 2.0
-					];
-					bel.pointEndL = [
-						px + signedY / (2.0 * Math.tan(arg)) + d,
-						py + signedY / 2.0
-					];
+					return {
+						pointEndR: [
+							px + signedY / (2.0 * Math.tan(arg)) - d,
+							py + signedY / 2.0
+						],
+						pointEndL: [
+							px + signedY / (2.0 * Math.tan(arg)) + d,
+							py + signedY / 2.0
+						],
+					};
 				}
 			} else {
 				let signedX;
@@ -358,54 +418,65 @@ export const setValues: (map: FontSetting) => {
 					signedX =  fontsetting.weight_x,
 					signedY =  fontsetting.weight_y;
 				if (bel.hv) {
-					bel.pointEndR = [
-						px + signedX / 2.0,
-						py + signedY / 2.0
-					];
-					bel.pointEndL = [
-						px + signedX / 2.0,
-						py - signedY / 2.0
-					];
+					return {
+						pointEndR: [
+							px + signedX / 2.0,
+							py + signedY / 2.0
+						],
+						pointEndL: [
+							px + signedX / 2.0,
+							py - signedY / 2.0
+						],
+					};
 				} else {
 					const { vx, vy } = bel;
 					const d = Math.hypot(fontsetting.weight_x * vy, fontsetting.weight_y * vx) / (2.0 * vx);
-					bel.pointEndR = [
-						px + signedX / 2.0,
-						py + signedX * Math.tan(arg) / 2.0 + d
-					];
-					bel.pointEndL = [
-						px + signedX / 2.0,
-						py + signedX * Math.tan(arg) / 2.0 - d
-					];
+					return {
+						pointEndR: [
+							px + signedX / 2.0,
+							py + signedX * Math.tan(arg) / 2.0 + d
+						],
+						pointEndL: [
+							px + signedX / 2.0,
+							py + signedX * Math.tan(arg) / 2.0 - d
+						],
+					};
 				}
 			}
 		}
 
-		function processRounded0CornerAfl(afl: SlimLine) {
+		function processRounded0CornerAfl(afl: SlimLine): {
+			pointStartR: [number, number];
+			pointStartL: [number, number];
+		} {
 			const { startX: px, startY: py, arg } = afl;
 			if (afl.isvert) {
 				const signedX = -copysign(fontsetting.weight_x, arg);
 				const signedY = -copysign(fontsetting.weight_y, arg);
 				if (afl.hv) {
-					afl.pointStartR = [
-						px + signedX / 2.0,
-						py + signedY / 2.0
-					];
-					afl.pointStartL = [
-						px - signedX / 2.0,
-						py + signedY / 2.0
-					];
+					return {
+						pointStartR: [
+							px + signedX / 2.0,
+							py + signedY / 2.0
+						],
+						pointStartL: [
+							px - signedX / 2.0,
+							py + signedY / 2.0
+						],
+					};
 				} else {
 					const { vx, vy } = afl;
 					const d = Math.hypot(fontsetting.weight_x * vy, fontsetting.weight_y * vx) / (2.0 * vy);
-					afl.pointStartR = [
-						px + signedY / (2.0 * Math.tan(arg)) - d,
-						py + signedY / 2.0
-					];
-					afl.pointStartL = [
-						px + signedY / (2.0 * Math.tan(arg)) + d,
-						py + signedY / 2.0
-					];
+					return {
+						pointStartR: [
+							px + signedY / (2.0 * Math.tan(arg)) - d,
+							py + signedY / 2.0
+						],
+						pointStartL: [
+							px + signedY / (2.0 * Math.tan(arg)) + d,
+							py + signedY / 2.0
+						],
+					};
 				}
 			} else {
 				let signedX;
@@ -419,25 +490,29 @@ export const setValues: (map: FontSetting) => {
 					signedX = -fontsetting.weight_x,
 					signedY = -fontsetting.weight_y;
 				if (afl.hv) {
-					afl.pointStartR = [
-						px + signedX / 2.0,
-						py - signedY / 2.0
-					];
-					afl.pointStartL = [
-						px + signedX / 2.0,
-						py + signedY / 2.0
-					];
+					return {
+						pointStartR: [
+							px + signedX / 2.0,
+							py - signedY / 2.0
+						],
+						pointStartL: [
+							px + signedX / 2.0,
+							py + signedY / 2.0
+						],
+					};
 				} else {
 					const { vx, vy } = afl;
 					const d = Math.hypot(fontsetting.weight_x * vy, fontsetting.weight_y * vx) / (2.0 * vx);
-					afl.pointStartR = [
-						px + signedX / 2.0,
-						py + signedX * Math.tan(arg) / 2.0 + d
-					];
-					afl.pointStartL = [
-						px + signedX / 2.0,
-						py + signedX * Math.tan(arg) / 2.0 - d
-					];
+					return {
+						pointStartR: [
+							px + signedX / 2.0,
+							py + signedX * Math.tan(arg) / 2.0 + d
+						],
+						pointStartL: [
+							px + signedX / 2.0,
+							py + signedX * Math.tan(arg) / 2.0 - d
+						],
+					};
 				}
 			}
 		}
