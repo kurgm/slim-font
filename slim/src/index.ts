@@ -150,7 +150,7 @@ export const setValues: (map: FontSetting) => {
 			for (let j = 0; j < pointc - 1; j++) {
 				const [p1x, p1y] = slimpoints[j];
 				const [p2x, p2y] = slimpoints[j + 1];
-				slimLines.push(createSlimLine(p1x, p1y, p2x, p2y));
+				slimLines.push(new SlimLine(p1x, p1y, p2x, p2y));
 			}
 			slimpoints.forEach(([px, py, pbety, pafty], j) => {
 				const bel = j !== 0          ? slimLines[j - 1] : null;
@@ -482,47 +482,45 @@ export const setValues: (map: FontSetting) => {
 
 	return { renderText, renderTextSvg };
 };
-interface SlimLine {
-	startX: number;
-	startY: number;
-	endX: number;
-	endY: number;
-	vx: number;
-	vy: number;
-	arg: number;
-	isvert: boolean;
-	hv: 0 | 1 | 2;
+class SlimLine {
+	readonly startX: number;
+	readonly startY: number;
+	readonly endX: number;
+	readonly endY: number;
+	readonly vx: number;
+	readonly vy: number;
+	readonly arg: number;
+	readonly isvert: boolean;
+	readonly hv: 0 | 1 | 2;
 	pointStartR: [number, number];
 	pointEndR: [number, number];
 	pointEndL: [number, number];
 	pointStartL: [number, number];
+	constructor(p1x: number, p1y: number, p2x: number, p2y: number) {
+		const vx = p2x - p1x;
+		const vy = p2y - p1y;
+		const arg = Math.atan2(vy, vx);
+		const arg2 = Math.abs(arg / Math.PI);
+		const isvert = (0.25 < arg2) && (arg2 < 0.75);
+		let hv: 0 | 1 | 2;
+		if (arg2 === 0.5)
+			hv = 1; //vert
+		else if (arg2 === 0.0 || arg2 === 1.0)
+			hv = 2; //hori
+		else
+			hv = 0;
+		this.startX = p1x;
+		this.startY = p1y;
+		this.endX = p2x;
+		this.endY = p2y;
+		this.vx = vx;
+		this.vy = vy;
+		this.arg = arg;
+		this.isvert = isvert;
+		this.hv = hv;
+		this.pointStartR = [] as never as [number, number];
+		this.pointEndR = [] as never as [number, number];
+		this.pointEndL = [] as never as [number, number];
+		this.pointStartL = [] as never as [number, number];
+	}
 }
-const createSlimLine = (p1x: number, p1y: number, p2x: number, p2y: number): SlimLine => {
-	const vx = p2x - p1x;
-	const vy = p2y - p1y;
-	const arg = Math.atan2(vy, vx);
-	const arg2 = Math.abs(arg / Math.PI);
-	const isvert = (0.25 < arg2) && (arg2 < 0.75);
-	let hv: 0 | 1 | 2;
-	if (arg2 === 0.5)
-		hv = 1; //vert
-	else if (arg2 === 0.0 || arg2 === 1.0)
-		hv = 2; //hori
-	else
-		hv = 0;
-	return {
-		startX: p1x,
-		startY: p1y,
-		endX: p2x,
-		endY: p2y,
-		vx,
-		vy,
-		arg,
-		isvert,
-		hv,
-		pointStartR: [] as never as [number, number],
-		pointEndR: [] as never as [number, number],
-		pointEndL: [] as never as [number, number],
-		pointStartL: [] as never as [number, number],
-	};
-};
