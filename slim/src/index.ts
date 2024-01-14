@@ -163,34 +163,52 @@ export const setValues: (map: FontSetting) => {
 							//corner
 							const result = processRounded2Corner(bel, afl);
 							slim_d.push(result.path);
-							bel.pointEndL = result.pointEndL;
-							bel.pointEndR = result.pointEndR;
-							afl.pointStartL = result.pointStartL;
-							afl.pointStartR = result.pointStartR;
+							bel.endEnding = {
+								type: "override",
+								pointL: result.pointEndL,
+								pointR: result.pointEndR,
+							};
+							afl.startEnding = {
+								type: "override",
+								pointL: result.pointStartL,
+								pointR: result.pointStartR,
+							};
 							return;
 						}
 					}
 				} else if (pbety !== 1 && pafty !== 1) {
 					if (bel && pbety === 2) {
 						const result = processRounded1CornerBel(bel);
-						bel.pointEndL = result.pointEndL;
-						bel.pointEndR = result.pointEndR;
+						bel.endEnding = {
+							type: "override",
+							pointL: result.pointEndL,
+							pointR: result.pointEndR,
+						};
 					}
 					if (afl && pafty === 2) {
 						const result = processRounded1CornerAfl(afl);
-						afl.pointStartL = result.pointStartL;
-						afl.pointStartR = result.pointStartR;
+						afl.startEnding = {
+							type: "override",
+							pointL: result.pointStartL,
+							pointR: result.pointStartR,
+						};
 					}
 					//not rounded
 					if (bel && pbety === 0) {
 						const result = processRounded0CornerBel(bel);
-						bel.pointEndL = result.pointEndL;
-						bel.pointEndR = result.pointEndR;
+						bel.endEnding = {
+							type: "override",
+							pointL: result.pointEndL,
+							pointR: result.pointEndR,
+						};
 					}
 					if (afl && pafty === 0) {
 						const result = processRounded0CornerAfl(afl);
-						afl.pointStartL = result.pointStartL;
-						afl.pointStartR = result.pointStartR;
+						afl.startEnding = {
+							type: "override",
+							pointL: result.pointStartL,
+							pointR: result.pointStartR,
+						};
 					}
 					if (bel === null && afl === null)
 						slim_d.push([
@@ -219,13 +237,19 @@ export const setValues: (map: FontSetting) => {
 				].join(" "));
 				if (bel) {
 					const result = processRounded1CornerBel(bel);
-					bel.pointEndL = result.pointEndL;
-					bel.pointEndR = result.pointEndR;
+					bel.endEnding = {
+						type: "override",
+						pointL: result.pointEndL,
+						pointR: result.pointEndR,
+					};
 				}
 				if (afl) {
 					const result = processRounded1CornerAfl(afl);
-					afl.pointStartL = result.pointStartL;
-					afl.pointStartR = result.pointStartR;
+					afl.startEnding = {
+						type: "override",
+						pointL: result.pointStartL,
+						pointR: result.pointStartR,
+					};
 				}
 			});
 			for (const line of slimLines) {
@@ -557,6 +581,15 @@ export const setValues: (map: FontSetting) => {
 
 	return { renderText, renderTextSvg };
 };
+type SlimLineEnding =
+	// | { type: "0" }
+	// | { type: "1" }
+	| {
+		type: "override";
+		pointL: [number, number];
+		pointR: [number, number];
+	};
+
 class SlimLine {
 	readonly startX: number;
 	readonly startY: number;
@@ -567,10 +600,8 @@ class SlimLine {
 	readonly arg: number;
 	readonly isvert: boolean;
 	readonly hv: 0 | 1 | 2;
-	pointStartR: [number, number];
-	pointEndR: [number, number];
-	pointEndL: [number, number];
-	pointStartL: [number, number];
+	startEnding: SlimLineEnding;
+	endEnding: SlimLineEnding;
 	constructor(p1x: number, p1y: number, p2x: number, p2y: number) {
 		const vx = p2x - p1x;
 		const vy = p2y - p1y;
@@ -593,9 +624,32 @@ class SlimLine {
 		this.arg = arg;
 		this.isvert = isvert;
 		this.hv = hv;
-		this.pointStartR = [] as never as [number, number];
-		this.pointEndR = [] as never as [number, number];
-		this.pointEndL = [] as never as [number, number];
-		this.pointStartL = [] as never as [number, number];
+		this.startEnding = {} as SlimLineEnding;
+		this.endEnding = {} as SlimLineEnding;
+	}
+
+	get pointStartR(): [number, number] {
+		switch (this.startEnding.type) {
+			case "override":
+				return this.startEnding.pointR;
+		}
+	}
+	get pointEndR(): [number, number] {
+		switch (this.endEnding.type) {
+			case "override":
+				return this.endEnding.pointR;
+		}
+	}
+	get pointEndL(): [number, number] {
+		switch (this.endEnding.type) {
+			case "override":
+				return this.endEnding.pointL;
+		}
+	}
+	get pointStartL(): [number, number] {
+		switch (this.startEnding.type) {
+			case "override":
+				return this.startEnding.pointL;
+		}
 	}
 }
