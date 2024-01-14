@@ -204,87 +204,19 @@ export const setValues: (map: FontSetting) => {
 				case "override":
 					return [this.startEnding.pointR, this.startEnding.pointL];
 				case "0": {
-					const { startX: px, startY: py, arg } = this;
-					if (this.isvert) {
-						const signedX = -copysign(fontsetting.weight_x, arg);
-						const signedY = -copysign(fontsetting.weight_y, arg);
-						if (this.hv) {
-							return [
-								[
-									px + signedX / 2.0,
-									py + signedY / 2.0
-								],
-								[
-									px - signedX / 2.0,
-									py + signedY / 2.0
-								],
-							];
-						} else {
-							const { vx, vy } = this;
-							const d = Math.hypot(fontsetting.weight_x * vy, fontsetting.weight_y * vx) / (2.0 * vy);
-							return [
-								[
-									px + signedY / (2.0 * Math.tan(arg)) - d,
-									py + signedY / 2.0
-								],
-								[
-									px + signedY / (2.0 * Math.tan(arg)) + d,
-									py + signedY / 2.0
-								],
-							];
-						}
-					} else {
-						let signedX;
-						let signedY;
-						if (Math.abs(arg / Math.PI) > 0.5)
-							// leftwards
-							signedX =  fontsetting.weight_x,
-							signedY =  fontsetting.weight_y;
-						else
-							// rightwards
-							signedX = -fontsetting.weight_x,
-							signedY = -fontsetting.weight_y;
-						if (this.hv) {
-							return [
-								[
-									px + signedX / 2.0,
-									py - signedY / 2.0
-								],
-								[
-									px + signedX / 2.0,
-									py + signedY / 2.0
-								],
-							];
-						} else {
-							const { vx, vy } = this;
-							const d = Math.hypot(fontsetting.weight_x * vy, fontsetting.weight_y * vx) / (2.0 * vx);
-							return [
-								[
-									px + signedX / 2.0,
-									py + signedX * Math.tan(arg) / 2.0 + d
-								],
-								[
-									px + signedX / 2.0,
-									py + signedX * Math.tan(arg) / 2.0 - d
-								],
-							];
-						}
-					}
+					const { startX: px, startY: py } = this;
+					const [dx1, dy1, dx2, dy2] = this.getOffset0();
+					return [
+						[px - dx1 - dx2, py - dy1 - dy2],
+						[px - dx1 + dx2, py - dy1 + dy2],
+					];
 				}
 				case "1": {
-					const { startX: px, startY: py, vx, vy } = this;
-					const k = 2.0 * Math.hypot(fontsetting.weight_x * vy, fontsetting.weight_y * vx);
-					const dx2 = fontsetting.weight_x ** 2 * vy / k;
-					const dy2 = fontsetting.weight_y ** 2 * vx / k;
+					const { startX: px, startY: py } = this;
+					const [dx2, dy2] = this.getOffset1();
 					return [
-						[
-							px - dx2,
-							py + dy2
-						],
-						[
-							px + dx2,
-							py - dy2
-						],
+						[px - dx2, py - dy2],
+						[px + dx2, py + dy2],
 					];
 				}
 			}
@@ -294,90 +226,71 @@ export const setValues: (map: FontSetting) => {
 				case "override":
 					return [this.endEnding.pointR, this.endEnding.pointL];
 				case "0": {
-					const { endX: px, endY: py, arg } = this;
-					if (this.isvert) {
-						const signedX = copysign(fontsetting.weight_x, arg);
-						const signedY = copysign(fontsetting.weight_y, arg);
-						if (this.hv) {
-							return [
-								[
-									px - signedX / 2.0,
-									py + signedY / 2.0
-								],
-								[
-									px + signedX / 2.0,
-									py + signedY / 2.0
-								],
-							];
-						} else {
-							const { vx, vy } = this;
-							const d = Math.hypot(fontsetting.weight_x * vy, fontsetting.weight_y * vx) / (2.0 * vy);
-							return [
-								[
-									px + signedY / (2.0 * Math.tan(arg)) - d,
-									py + signedY / 2.0
-								],
-								[
-									px + signedY / (2.0 * Math.tan(arg)) + d,
-									py + signedY / 2.0
-								],
-							];
-						}
-					} else {
-						let signedX;
-						let signedY;
-						if (Math.abs(arg / Math.PI) > 0.5)
-							// leftwards
-							signedX = -fontsetting.weight_x,
-							signedY = -fontsetting.weight_y;
-						else
-							// rightwards
-							signedX =  fontsetting.weight_x,
-							signedY =  fontsetting.weight_y;
-						if (this.hv) {
-							return [
-								[
-									px + signedX / 2.0,
-									py + signedY / 2.0
-								],
-								[
-									px + signedX / 2.0,
-									py - signedY / 2.0
-								],
-							];
-						} else {
-							const { vx, vy } = this;
-							const d = Math.hypot(fontsetting.weight_x * vy, fontsetting.weight_y * vx) / (2.0 * vx);
-							return [
-								[
-									px + signedX / 2.0,
-									py + signedX * Math.tan(arg) / 2.0 + d
-								],
-								[
-									px + signedX / 2.0,
-									py + signedX * Math.tan(arg) / 2.0 - d
-								],
-							];
-						}
-					}
+					const { endX: px, endY: py } = this;
+					const [dx1, dy1, dx2, dy2] = this.getOffset0();
+					return [
+						[px + dx1 - dx2, py + dy1 - dy2],
+						[px + dx1 + dx2, py + dy1 + dy2],
+					];
 				}
 				case "1": {
-					const { endX: px, endY: py, vx, vy } = this;
-					const k = 2.0 * Math.hypot(fontsetting.weight_x * vy, fontsetting.weight_y * vx);
-					const dx2 = fontsetting.weight_x ** 2 * vy / k;
-					const dy2 = fontsetting.weight_y ** 2 * vx / k;
+					const { endX: px, endY: py } = this;
+					const [dx2, dy2] = this.getOffset1();
 					return [
-						[
-							px - dx2,
-							py + dy2
-						],
-						[
-							px + dx2,
-							py - dy2
-						],
+						[px - dx2, py - dy2],
+						[px + dx2, py + dy2],
 					];
 				}
 			}
+		}
+		getOffset0(): [dx1: number, dy1: number, dx2: number, dy2: number] {
+			const { arg } = this;
+			if (this.isvert) {
+				const signedX = copysign(fontsetting.weight_x, arg);
+				const signedY = copysign(fontsetting.weight_y, arg);
+				if (this.hv) {
+					return [0, signedY / 2.0, signedX / 2.0, 0];
+				} else {
+					const { vx, vy } = this;
+					const d = Math.hypot(fontsetting.weight_x * vy, fontsetting.weight_y * vx) / (2.0 * vy);
+					return [
+						signedY / (2.0 * Math.tan(arg)),
+						signedY / 2.0,
+						d,
+						0
+					];
+				}
+			} else {
+				let signedX;
+				let signedY;
+				if (Math.abs(arg / Math.PI) > 0.5)
+					// leftwards
+					signedX = -fontsetting.weight_x,
+					signedY = -fontsetting.weight_y;
+				else
+					// rightwards
+					signedX =  fontsetting.weight_x,
+					signedY =  fontsetting.weight_y;
+				if (this.hv) {
+					return [signedX / 2.0, 0, 0, -signedY / 2.0];
+				} else {
+					const { vx, vy } = this;
+					const d = Math.hypot(fontsetting.weight_x * vy, fontsetting.weight_y * vx) / (2.0 * vx);
+					return [
+						signedX / 2.0,
+						signedX * Math.tan(arg) / 2.0,
+						0,
+						-d
+					];
+				}
+			}
+		}
+		getOffset1(): [dx2: number, dy2: number] {
+			const { vx, vy } = this;
+			const k = 2.0 * Math.hypot(fontsetting.weight_x * vy, fontsetting.weight_y * vx);
+			const dx2 = fontsetting.weight_x ** 2 * +vy / k;
+			const dy2 = fontsetting.weight_y ** 2 * -vx / k;
+			return [dx2, dy2];
 		}
 	}
 	function slim2pathd(database: Record<string, SlimGlyphData>, glyphname: string, dx = 0.0, dy = 0.0): [d: string[], width: number] {
