@@ -161,23 +161,23 @@ export const setValues: (map: FontSetting) => {
 						const hv2 = afl.hv;
 						if (hv1 && hv2 && hv1 !== hv2) {
 							//corner
-							processRounded2Corner(bel, afl, px, py);
+							processRounded2Corner(bel, afl);
 							return;
 						}
 					}
 				} else if (pbety !== 1 && pafty !== 1) {
 					if (bel && pbety === 2) {
-						processRounded1CornerBel(bel, px, py);
+						processRounded1CornerBel(bel);
 					}
 					if (afl && pafty === 2) {
-						processRounded1CornerAfl(afl, px, py);
+						processRounded1CornerAfl(afl);
 					}
 					//not rounded
 					if (bel && pbety === 0) {
-						processRounded0CornerBel(bel, px, py);
+						processRounded0CornerBel(bel);
 					}
 					if (afl && pafty === 0) {
-						processRounded0CornerAfl(afl, px, py);
+						processRounded0CornerAfl(afl);
 					}
 					if (bel === null && afl === null)
 						slim_d.push([
@@ -205,10 +205,10 @@ export const setValues: (map: FontSetting) => {
 					"z"
 				].join(" "));
 				if (bel) {
-					processRounded1CornerBel(bel, px, py);
+					processRounded1CornerBel(bel);
 				}
 				if (afl) {
-					processRounded1CornerAfl(afl, px, py);
+					processRounded1CornerAfl(afl);
 				}
 			});
 			for (const line of slimLines) {
@@ -224,8 +224,8 @@ export const setValues: (map: FontSetting) => {
 		}
 		return [slim_d, getGlyphWidth(database, glyphname, max_w, dx)];
 
-		function processRounded1CornerBel(bel: SlimLine, px: number, py: number) {
-			const { vx, vy } = bel;
+		function processRounded1CornerBel(bel: SlimLine) {
+			const { endX: px, endY: py, vx, vy } = bel;
 			const k = 2.0 * Math.hypot(fontsetting.weight_x * vy, fontsetting.weight_y * vx);
 			const dx2 = fontsetting.weight_x ** 2 * vy / k;
 			const dy2 = fontsetting.weight_y ** 2 * vx / k;
@@ -239,8 +239,8 @@ export const setValues: (map: FontSetting) => {
 			];
 		}
 
-		function processRounded1CornerAfl(afl: SlimLine, px: number, py: number) {
-			const { vx, vy } = afl;
+		function processRounded1CornerAfl(afl: SlimLine) {
+			const { startX: px, startY: py, vx, vy } = afl;
 			const k = 2.0 * Math.hypot(fontsetting.weight_x * vy, fontsetting.weight_y * vx);
 			const dx2 = fontsetting.weight_x ** 2 * vy / k;
 			const dy2 = fontsetting.weight_y ** 2 * vx / k;
@@ -254,7 +254,11 @@ export const setValues: (map: FontSetting) => {
 			];
 		}
 
-		function processRounded2Corner(bel: SlimLine, afl: SlimLine, px: number, py: number) {
+		function processRounded2Corner(bel: SlimLine, afl: SlimLine) {
+			const { endX: px, endY: py } = bel;
+			if (px !== afl.startX || py !== afl.startY) {
+				throw new SlimError(`assertion failed: (${px}, ${py}) !== (${afl.startX}, ${afl.startY})`);
+			}
 			const arg1 = bel.arg / Math.PI;
 			const arg2 = afl.arg / Math.PI;
 			let xs;
@@ -315,8 +319,8 @@ export const setValues: (map: FontSetting) => {
 			}
 		}
 
-		function processRounded0CornerBel(bel: SlimLine, px: number, py: number) {
-			const arg = bel.arg;
+		function processRounded0CornerBel(bel: SlimLine) {
+			const { endX: px, endY: py, arg } = bel;
 			if (bel.isvert) {
 				const signedX = copysign(fontsetting.weight_x, arg);
 				const signedY = copysign(fontsetting.weight_y, arg);
@@ -377,8 +381,8 @@ export const setValues: (map: FontSetting) => {
 			}
 		}
 
-		function processRounded0CornerAfl(afl: SlimLine, px: number, py: number) {
-			const arg = afl.arg;
+		function processRounded0CornerAfl(afl: SlimLine) {
+			const { startX: px, startY: py, arg } = afl;
 			if (afl.isvert) {
 				const signedX = -copysign(fontsetting.weight_x, arg);
 				const signedY = -copysign(fontsetting.weight_y, arg);
@@ -479,6 +483,10 @@ export const setValues: (map: FontSetting) => {
 	return { renderText, renderTextSvg };
 };
 interface SlimLine {
+	startX: number;
+	startY: number;
+	endX: number;
+	endY: number;
 	vx: number;
 	vy: number;
 	arg: number;
@@ -503,6 +511,10 @@ const createSlimLine = (p1x: number, p1y: number, p2x: number, p2y: number): Sli
 	else
 		hv = 0;
 	return {
+		startX: p1x,
+		startY: p1y,
+		endX: p2x,
+		endY: p2y,
 		vx,
 		vy,
 		arg,
