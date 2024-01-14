@@ -128,17 +128,6 @@ export const setValues: (map: FontSetting) => {
 		const slimdata = glyphdata.slim;
 		const slim_d: string[] = [];
 		let max_w = horipos(-1);
-		interface SlimLine {
-			x: number;
-			y: number;
-			arg: number;
-			isvert: boolean;
-			hv: 0 | 1 | 2;
-			pointStartR: [number, number];
-			pointEndR: [number, number];
-			pointEndL: [number, number];
-			pointStartL: [number, number];
-		}
 		for (const slimelem of slimdata) {
 			if (slimelem.charAt(0) === "#") {
 				const params = slimelem.split("#");
@@ -157,35 +146,15 @@ export const setValues: (map: FontSetting) => {
 				max_w = Math.max(max_w, px + (fontsetting.weight_x + fontsetting.space_x) / 2.0);
 			}
 			const pointc = slimpoints.length;
-			const line: SlimLine[] = [];
+			const slimLines: SlimLine[] = [];
 			for (let j = 0; j < pointc - 1; j++) {
 				const [p1x, p1y] = slimpoints[j];
 				const [p2x, p2y] = slimpoints[j + 1];
-				const arg = Math.atan2(p2y - p1y, p2x - p1x);
-				const arg2 = Math.abs(arg / Math.PI);
-				const isvert = (0.25 < arg2) && (arg2 < 0.75);
-				let hv: 0 | 1 | 2;
-				if (arg2 === 0.5)
-					hv = 1; //vert
-				else if (arg2 === 0.0 || arg2 === 1.0)
-					hv = 2; //hori
-				else
-					hv = 0;
-				line.push({
-					"x": p2x - p1x,
-					"y": p2y - p1y,
-					"arg": arg,
-					"isvert": isvert,
-					"hv": hv,
-					pointStartR: [] as never as [number, number],
-					pointEndR: [] as never as [number, number],
-					pointEndL: [] as never as [number, number],
-					pointStartL: [] as never as [number, number],
-				});
+				slimLines.push(createSlimLine(p1x, p1y, p2x, p2y));
 			}
 			slimpoints.forEach(([px, py, pbety, pafty], j) => {
-				const bel = j !== 0          ? line[j - 1] : null;
-				const afl = j !== pointc - 1 ? line[j]     : null;
+				const bel = j !== 0          ? slimLines[j - 1] : null;
+				const afl = j !== pointc - 1 ? slimLines[j]     : null;
 				if (pbety === 1 && pafty === 1) {
 					if (bel && afl) {
 						const hv1 = bel.hv;
@@ -242,13 +211,13 @@ export const setValues: (map: FontSetting) => {
 					processRounded1CornerAfl(afl, px, py);
 				}
 			});
-			for (const lineElem of line) {
+			for (const line of slimLines) {
 				slim_d.push([
 					"M",
-					lineElem.pointStartR.join(","),
-					lineElem.pointEndR.join(","),
-					lineElem.pointEndL.join(","),
-					lineElem.pointStartL.join(","),
+					line.pointStartR.join(","),
+					line.pointEndR.join(","),
+					line.pointEndL.join(","),
+					line.pointStartL.join(","),
 					"z"
 				].join(" "));
 			}
@@ -514,4 +483,38 @@ export const setValues: (map: FontSetting) => {
 	}
 
 	return { renderText, renderTextSvg };
+};
+interface SlimLine {
+	x: number;
+	y: number;
+	arg: number;
+	isvert: boolean;
+	hv: 0 | 1 | 2;
+	pointStartR: [number, number];
+	pointEndR: [number, number];
+	pointEndL: [number, number];
+	pointStartL: [number, number];
+}
+const createSlimLine = (p1x: number, p1y: number, p2x: number, p2y: number): SlimLine => {
+	const arg = Math.atan2(p2y - p1y, p2x - p1x);
+	const arg2 = Math.abs(arg / Math.PI);
+	const isvert = (0.25 < arg2) && (arg2 < 0.75);
+	let hv: 0 | 1 | 2;
+	if (arg2 === 0.5)
+		hv = 1; //vert
+	else if (arg2 === 0.0 || arg2 === 1.0)
+		hv = 2; //hori
+	else
+		hv = 0;
+	return {
+		"x": p2x - p1x,
+		"y": p2y - p1y,
+		"arg": arg,
+		"isvert": isvert,
+		"hv": hv,
+		pointStartR: [] as never as [number, number],
+		pointEndR: [] as never as [number, number],
+		pointEndL: [] as never as [number, number],
+		pointStartL: [] as never as [number, number],
+	};
 };
