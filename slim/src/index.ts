@@ -28,9 +28,6 @@ export class SlimError extends Error {
 		this.prototype.name = "SlimError";
 	}
 }
-function copysign (a: number, b: number) {
-	return a * b < 0 ? -a : a;
-}
 
 
 export const setValues: (map: FontSetting) => {
@@ -177,15 +174,8 @@ export const setValues: (map: FontSetting) => {
 			const vx = p2x - p1x;
 			const vy = p2y - p1y;
 			const arg = Math.atan2(vy, vx);
-			const arg2 = Math.abs(arg / Math.PI);
-			const isvert = (0.25 < arg2) && (arg2 < 0.75);
-			let hv: 0 | 1 | 2;
-			if (arg2 === 0.5)
-				hv = 1; //vert
-			else if (arg2 === 0.0 || arg2 === 1.0)
-				hv = 2; //hori
-			else
-				hv = 0;
+			const isvert = Math.abs(vx) < Math.abs(vy);
+			const hv = vy === 0 ? 2 : vx === 0 ? 1 : 0;
 			this.startX = p1x;
 			this.startY = p1y;
 			this.endX = p2x;
@@ -246,8 +236,9 @@ export const setValues: (map: FontSetting) => {
 		getOffset0(): [dx1: number, dy1: number, dx2: number, dy2: number] {
 			const { arg } = this;
 			if (this.isvert) {
-				const signedX = copysign(fontsetting.weight_x, arg);
-				const signedY = copysign(fontsetting.weight_y, arg);
+				const sign = this.vy < 0 ? -1 : 1;
+				const signedX = sign * fontsetting.weight_x;
+				const signedY = sign * fontsetting.weight_y;
 				if (this.hv) {
 					return [0, signedY / 2.0, signedX / 2.0, 0];
 				} else {
@@ -261,16 +252,9 @@ export const setValues: (map: FontSetting) => {
 					];
 				}
 			} else {
-				let signedX;
-				let signedY;
-				if (Math.abs(arg / Math.PI) > 0.5)
-					// leftwards
-					signedX = -fontsetting.weight_x,
-					signedY = -fontsetting.weight_y;
-				else
-					// rightwards
-					signedX =  fontsetting.weight_x,
-					signedY =  fontsetting.weight_y;
+				const sign = this.vx < 0 ? -1 : 1;
+				const signedX = sign * fontsetting.weight_x;
+				const signedY = sign * fontsetting.weight_y;
 				if (this.hv) {
 					return [signedX / 2.0, 0, 0, -signedY / 2.0];
 				} else {
