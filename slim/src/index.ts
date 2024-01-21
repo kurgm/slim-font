@@ -165,20 +165,17 @@ export const setValues: (map: FontSetting) => {
 		readonly endY: number;
 		readonly vx: number;
 		readonly vy: number;
-		readonly isvert: boolean;
 		startEnding: SlimLineEnding;
 		endEnding: SlimLineEnding;
 		constructor(p1x: number, p1y: number, p2x: number, p2y: number) {
 			const vx = p2x - p1x;
 			const vy = p2y - p1y;
-			const isvert = Math.abs(vx) < Math.abs(vy);
 			this.startX = p1x;
 			this.startY = p1y;
 			this.endX = p2x;
 			this.endY = p2y;
 			this.vx = vx;
 			this.vy = vy;
-			this.isvert = isvert;
 			this.startEnding = {} as SlimLineEnding;
 			this.endEnding = {} as SlimLineEnding;
 		}
@@ -228,7 +225,7 @@ export const setValues: (map: FontSetting) => {
 			}
 		}
 		getOffset0(): [dx1: number, dy1: number, dx2: number, dy2: number] {
-			if (this.isvert) {
+			if (Math.abs(this.vx) < Math.abs(this.vy)) {
 				const sign = this.vy < 0 ? -1 : 1;
 				const signedX = sign * fontsetting.weight_x;
 				const signedY = sign * fontsetting.weight_y;
