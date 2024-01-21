@@ -70,7 +70,7 @@ export const setValues: (map: FontSetting) => {
 		}
 		return res;
 	}
-	function pathCorner(xScale: number, yScale: number, x: number, y: number): {
+	function pathCorner(xScale: 1 | -1, yScale: 1 | -1, x: number, y: number): {
 		vert_outer: [number, number];
 		vert_inner: [number, number];
 		hori_outer: [number, number];
@@ -94,7 +94,7 @@ export const setValues: (map: FontSetting) => {
 			xScale * (radius_outer - fontsetting.weight_x / 2.0) + x,
 			yScale * (  fontsetting.weight_y / 2.0) + y
 		];
-		const isnotinv = xScale * yScale > 0;
+		const isnotinv = xScale === yScale;
 		return {
 			vert_outer,
 			vert_inner,
@@ -165,14 +165,12 @@ export const setValues: (map: FontSetting) => {
 		readonly endY: number;
 		readonly vx: number;
 		readonly vy: number;
-		readonly arg: number;
 		readonly isvert: boolean;
 		startEnding: SlimLineEnding;
 		endEnding: SlimLineEnding;
 		constructor(p1x: number, p1y: number, p2x: number, p2y: number) {
 			const vx = p2x - p1x;
 			const vy = p2y - p1y;
-			const arg = Math.atan2(vy, vx);
 			const isvert = Math.abs(vx) < Math.abs(vy);
 			this.startX = p1x;
 			this.startY = p1y;
@@ -180,7 +178,6 @@ export const setValues: (map: FontSetting) => {
 			this.endY = p2y;
 			this.vx = vx;
 			this.vy = vy;
-			this.arg = arg;
 			this.isvert = isvert;
 			this.startEnding = {} as SlimLineEnding;
 			this.endEnding = {} as SlimLineEnding;
@@ -389,10 +386,20 @@ export const setValues: (map: FontSetting) => {
 		if (px !== afl.startX || py !== afl.startY) {
 			throw new SlimError(`assertion failed: (${px}, ${py}) !== (${afl.startX}, ${afl.startY})`);
 		}
-		const arg1 = bel.arg / Math.PI;
-		const arg2 = afl.arg / Math.PI;
-		let xs;
-		let ys;
+		const getArg = (line: SlimLine) => {
+			const { vx, vy } = line;
+			return vy === 0
+				? vx > 0 ? 0 : 1
+				: vx === 0
+					? vy > 0 ? 0.5 : -0.5
+					: null;
+		};
+		const arg1 = getArg(bel);
+		const arg2 = getArg(afl);
+		if (arg1 === null || arg2 === null)
+			return null;
+		let xs: 1 | -1;
+		let ys: 1 | -1;
 		if      ((arg1 === -0.5 && arg2 === 0.0) || (arg1 === 1.0 && arg2 ===  0.5))
 			// left-top corner
 			xs =  1, ys =  1;
