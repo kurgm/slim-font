@@ -122,20 +122,25 @@ export const setValues: (map: FontSetting) => {
 			].join(" "),
 		};
 	}
-	const typdic: Record<string, 0 | 1 | 2> = {
-		"s": 0,
-		"r": 1,
-		"b": 2
+	const enum CornerType {
+		S,
+		R,
+		B,
+	}
+	const typdic: Record<string, CornerType> = {
+		"s": CornerType.S,
+		"r": CornerType.R,
+		"b": CornerType.B,
 	};
-	function slimParsepoint(slimpoint: string, dx: number, dy: number): [x: number, y: number, bety: 0 | 1 | 2, afty: 0 | 1 | 2] {
+	function slimParsepoint(slimpoint: string, dx: number, dy: number): [x: number, y: number, bety: CornerType, afty: CornerType] {
 		dx = dx || 0.0;
 		dy = dy || 0.0;
 		const mobj = slimpoint.match(/^([srb]{0,2})([tbxdmgfyMTB])([^,]*),([^,]+)$/);
 		if (!mobj) throw new SlimError(`syntax error: ${slimpoint}`);
 		const [, typ, pos, y, x] = mobj;
 		const typlen = typ.length;
-		let bety: 0 | 1 | 2;
-		let afty: 0 | 1 | 2;
+		let bety: CornerType;
+		let afty: CornerType;
 		if (typlen === 0)
 			bety = afty = 0;
 		else if (typlen === 1)
@@ -299,12 +304,12 @@ export const setValues: (map: FontSetting) => {
 			slimpoints.forEach(([px, py, pbety, pafty], j) => {
 				const bel = j !== 0          ? slimLines[j - 1] : null;
 				const afl = j !== pointc - 1 ? slimLines[j]     : null;
-				if (pbety !== 1 && pafty !== 1) {
+				if (pbety !== CornerType.R && pafty !== CornerType.R) {
 					if (bel) {
-						bel.endEnding = pbety === 2 ? { type: "1" } : { type: "0" };
+						bel.endEnding = pbety === CornerType.B ? { type: "1" } : { type: "0" };
 					}
 					if (afl) {
-						afl.startEnding = pafty === 2 ? { type: "1" } : { type: "0" };
+						afl.startEnding = pafty === CornerType.B ? { type: "1" } : { type: "0" };
 					}
 					if (bel === null && afl === null)
 						slim_d.push([
@@ -317,7 +322,7 @@ export const setValues: (map: FontSetting) => {
 						].join(" "));
 					return;
 				}
-				if (pbety === 1 && pafty === 1 && bel && afl) {
+				if (pbety === CornerType.R && pafty === CornerType.R && bel && afl) {
 					//corner
 					const result = processRounded2Corner(bel, afl);
 					if (result) {
