@@ -234,7 +234,6 @@ export const setValues: (map: FontSetting) => {
 			}
 		}
 		getOffset0(): [dx1: number, dy1: number, dx2: number, dy2: number] {
-			const { arg } = this;
 			if (this.isvert) {
 				const sign = this.vy < 0 ? -1 : 1;
 				const signedX = sign * fontsetting.weight_x;
@@ -245,7 +244,7 @@ export const setValues: (map: FontSetting) => {
 					const { vx, vy } = this;
 					const d = Math.hypot(fontsetting.weight_x * vy, fontsetting.weight_y * vx) / (2.0 * vy);
 					return [
-						signedY / (2.0 * Math.tan(arg)),
+						signedY / (2.0 * vy / vx),
 						signedY / 2.0,
 						d,
 						0
@@ -262,7 +261,7 @@ export const setValues: (map: FontSetting) => {
 					const d = Math.hypot(fontsetting.weight_x * vy, fontsetting.weight_y * vx) / (2.0 * vx);
 					return [
 						signedX / 2.0,
-						signedX * Math.tan(arg) / 2.0,
+						signedX * vy / vx / 2.0,
 						0,
 						-d
 					];
