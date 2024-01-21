@@ -326,21 +326,23 @@ export const setValues: (map: FontSetting) => {
 						].join(" "));
 					return;
 				}
-				if (pbety === 1 && pafty === 1 && bel && afl && bel.hv && afl.hv && bel.hv !== afl.hv) {
+				if (pbety === 1 && pafty === 1 && bel && afl) {
 					//corner
 					const result = processRounded2Corner(bel, afl);
-					slim_d.push(result.path);
-					bel.endEnding = {
-						type: "override",
-						pointL: result.pointEndL,
-						pointR: result.pointEndR,
-					};
-					afl.startEnding = {
-						type: "override",
-						pointL: result.pointStartL,
-						pointR: result.pointStartR,
-					};
-					return;
+					if (result) {
+						slim_d.push(result.path);
+						bel.endEnding = {
+							type: "override",
+							pointL: result.pointEndL,
+							pointR: result.pointEndR,
+						};
+						afl.startEnding = {
+							type: "override",
+							pointL: result.pointStartL,
+							pointR: result.pointStartR,
+						};
+						return;
+					}
 				}
 				//round stroke
 				slim_d.push([
@@ -385,7 +387,7 @@ export const setValues: (map: FontSetting) => {
 		pointEndL: [number, number];
 		pointStartR: [number, number];
 		pointStartL: [number, number];
-	} {
+	} | null {
 		const { endX: px, endY: py } = bel;
 		if (px !== afl.startX || py !== afl.startY) {
 			throw new SlimError(`assertion failed: (${px}, ${py}) !== (${afl.startX}, ${afl.startY})`);
@@ -407,7 +409,7 @@ export const setValues: (map: FontSetting) => {
 			// left-bottom corner
 			xs =  1, ys = -1;
 		else
-			throw new SlimError(`unexpected corner: ${arg1}, ${arg2}`);
+			return null;
 		const { path, vert_outer, vert_inner, hori_outer, hori_inner, isnotinv } = pathCorner(xs, ys, px, py);
 		if (bel.hv === 1) {
 			//vert -> hori
