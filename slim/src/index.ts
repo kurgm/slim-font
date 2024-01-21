@@ -167,7 +167,6 @@ export const setValues: (map: FontSetting) => {
 		readonly vy: number;
 		readonly arg: number;
 		readonly isvert: boolean;
-		readonly hv: 0 | 1 | 2;
 		startEnding: SlimLineEnding;
 		endEnding: SlimLineEnding;
 		constructor(p1x: number, p1y: number, p2x: number, p2y: number) {
@@ -175,7 +174,6 @@ export const setValues: (map: FontSetting) => {
 			const vy = p2y - p1y;
 			const arg = Math.atan2(vy, vx);
 			const isvert = Math.abs(vx) < Math.abs(vy);
-			const hv = vy === 0 ? 2 : vx === 0 ? 1 : 0;
 			this.startX = p1x;
 			this.startY = p1y;
 			this.endX = p2x;
@@ -184,7 +182,6 @@ export const setValues: (map: FontSetting) => {
 			this.vy = vy;
 			this.arg = arg;
 			this.isvert = isvert;
-			this.hv = hv;
 			this.startEnding = {} as SlimLineEnding;
 			this.endEnding = {} as SlimLineEnding;
 		}
@@ -238,7 +235,7 @@ export const setValues: (map: FontSetting) => {
 				const sign = this.vy < 0 ? -1 : 1;
 				const signedX = sign * fontsetting.weight_x;
 				const signedY = sign * fontsetting.weight_y;
-				if (this.hv) {
+				if (this.vx === 0) {
 					return [0, signedY / 2.0, signedX / 2.0, 0];
 				} else {
 					const { vx, vy } = this;
@@ -254,7 +251,7 @@ export const setValues: (map: FontSetting) => {
 				const sign = this.vx < 0 ? -1 : 1;
 				const signedX = sign * fontsetting.weight_x;
 				const signedY = sign * fontsetting.weight_y;
-				if (this.hv) {
+				if (this.vy === 0) {
 					return [signedX / 2.0, 0, 0, -signedY / 2.0];
 				} else {
 					const { vx, vy } = this;
@@ -411,7 +408,7 @@ export const setValues: (map: FontSetting) => {
 		else
 			return null;
 		const { path, vert_outer, vert_inner, hori_outer, hori_inner, isnotinv } = pathCorner(xs, ys, px, py);
-		if (bel.hv === 1) {
+		if (bel.vy !== 0 && bel.vx === 0) {
 			//vert -> hori
 			if (isnotinv) {
 				//left-top or right-bottom corner
