@@ -155,8 +155,8 @@ export const setValues: (map: FontSetting) => {
 		];
 	}
 	type SlimLineEnding =
-		| { type: "0" }
-		| { type: "1" }
+		| { type: "s" }
+		| { type: "b" }
 		| {
 			type: "override";
 			pointL: [number, number];
@@ -189,17 +189,17 @@ export const setValues: (map: FontSetting) => {
 			switch (this.startEnding.type) {
 				case "override":
 					return [this.startEnding.pointR, this.startEnding.pointL];
-				case "0": {
+				case "s": {
 					const { startX: px, startY: py } = this;
-					const [dx1, dy1, dx2, dy2] = this.getOffset0();
+					const [dx1, dy1, dx2, dy2] = this.getOffsetS();
 					return [
 						[px - dx1 - dx2, py - dy1 - dy2],
 						[px - dx1 + dx2, py - dy1 + dy2],
 					];
 				}
-				case "1": {
+				case "b": {
 					const { startX: px, startY: py } = this;
-					const [dx2, dy2] = this.getOffset1();
+					const [dx2, dy2] = this.getOffsetB();
 					return [
 						[px - dx2, py - dy2],
 						[px + dx2, py + dy2],
@@ -211,17 +211,17 @@ export const setValues: (map: FontSetting) => {
 			switch (this.endEnding.type) {
 				case "override":
 					return [this.endEnding.pointR, this.endEnding.pointL];
-				case "0": {
+				case "s": {
 					const { endX: px, endY: py } = this;
-					const [dx1, dy1, dx2, dy2] = this.getOffset0();
+					const [dx1, dy1, dx2, dy2] = this.getOffsetS();
 					return [
 						[px + dx1 - dx2, py + dy1 - dy2],
 						[px + dx1 + dx2, py + dy1 + dy2],
 					];
 				}
-				case "1": {
+				case "b": {
 					const { endX: px, endY: py } = this;
-					const [dx2, dy2] = this.getOffset1();
+					const [dx2, dy2] = this.getOffsetB();
 					return [
 						[px - dx2, py - dy2],
 						[px + dx2, py + dy2],
@@ -229,7 +229,7 @@ export const setValues: (map: FontSetting) => {
 				}
 			}
 		}
-		getOffset0(): [dx1: number, dy1: number, dx2: number, dy2: number] {
+		getOffsetS(): [dx1: number, dy1: number, dx2: number, dy2: number] {
 			if (Math.abs(this.vx) < Math.abs(this.vy)) {
 				const sign = this.vy < 0 ? -1 : 1;
 				const signedX = sign * fontsetting.weight_x;
@@ -264,7 +264,7 @@ export const setValues: (map: FontSetting) => {
 				}
 			}
 		}
-		getOffset1(): [dx2: number, dy2: number] {
+		getOffsetB(): [dx2: number, dy2: number] {
 			const { vx, vy } = this;
 			const k = 2.0 * Math.hypot(fontsetting.weight_x * vy, fontsetting.weight_y * vx);
 			const dx2 = fontsetting.weight_x ** 2 * +vy / k;
@@ -306,10 +306,10 @@ export const setValues: (map: FontSetting) => {
 				const afl = j !== pointc - 1 ? slimLines[j]     : null;
 				if (pbety !== CornerType.R && pafty !== CornerType.R) {
 					if (bel) {
-						bel.endEnding = pbety === CornerType.B ? { type: "1" } : { type: "0" };
+						bel.endEnding = pbety === CornerType.B ? { type: "b" } : { type: "s" };
 					}
 					if (afl) {
-						afl.startEnding = pafty === CornerType.B ? { type: "1" } : { type: "0" };
+						afl.startEnding = pafty === CornerType.B ? { type: "b" } : { type: "s" };
 					}
 					if (bel === null && afl === null)
 						slim_d.push([
@@ -355,10 +355,10 @@ export const setValues: (map: FontSetting) => {
 					"z"
 				].join(" "));
 				if (bel) {
-					bel.endEnding = { type: "1" };
+					bel.endEnding = { type: "b" };
 				}
 				if (afl) {
-					afl.startEnding = { type: "1" };
+					afl.startEnding = { type: "b" };
 				}
 			});
 			for (const line of slimLines) {
