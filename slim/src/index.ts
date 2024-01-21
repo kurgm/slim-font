@@ -235,7 +235,7 @@ export const setValues: (map: FontSetting) => {
 					const { vx, vy } = this;
 					const d = Math.hypot(fontsetting.weight_x * vy, fontsetting.weight_y * vx) / (2.0 * vy);
 					return [
-						signedY / (2.0 * vy / vx),
+						signedY * vx / (2.0 * vy),
 						signedY / 2.0,
 						d,
 						0
@@ -252,7 +252,7 @@ export const setValues: (map: FontSetting) => {
 					const d = Math.hypot(fontsetting.weight_x * vy, fontsetting.weight_y * vx) / (2.0 * vx);
 					return [
 						signedX / 2.0,
-						signedX * vy / vx / 2.0,
+						signedX * vy / (2.0 * vx),
 						0,
 						-d
 					];
