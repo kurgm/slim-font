@@ -2,6 +2,8 @@
 
 新しい項目が上に来ています。
 
+- 2024-01-06  
+  <https://kurgm.github.io/slim-font/> に JavaScript 移植版のデモを移動しました。
 - 2013-11-03  
   <https://ku6goma.appspot.com/font/slim/slimjs.html> にて JavaScript 移植版を公開しました。
 - 2013-10-15 ver. 0.10  
