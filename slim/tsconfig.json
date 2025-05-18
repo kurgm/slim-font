@@ -1,11 +1,16 @@
 {
   "compilerOptions": {
+    "tsBuildInfoFile": "../node_modules/.tmp/slim/tsconfig.tsbuildinfo",
     "composite": true,
     "declaration": true,
     "declarationMap": true,
     "declarationDir": "dist",
     "outDir": "dist",
     "rootDir": "src",
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    // "erasableSyntaxOnly": true,
+    "noFallthroughCasesInSwitch": true
   },
   "include": ["src"],
   "extends": "@tsconfig/node-lts/tsconfig.json"
