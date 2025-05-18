@@ -5,23 +5,27 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "lint": "eslint . --ext .ts,.tsx --report-unused-disable-directives",
+    "lint": "eslint .",
     "preview": "vite preview"
   },
   "devDependencies": {
+    "@eslint/js": "^8.57.1",
     "@types/react": "^18.2.47",
     "@types/react-dom": "^18.2.18",
-    "@typescript-eslint/eslint-plugin": "^7.18.0",
-    "@typescript-eslint/parser": "^7.18.0",
     "@vitejs/plugin-react": "^4.2.1",
     "eslint": "^8.57.1",
     "eslint-plugin-react-hooks": "^5.2.0",
+    "globals": "^13.24.0",
     "typescript": "^5.3.3",
+    "typescript-eslint": "^7.18.0",
     "vite": "^5.4.19"
   },
   "dependencies": {
     "@kurgm/slim-font": "*",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
+  },
+  "overrides": {
+    "eslint": "$eslint"
   }
 }

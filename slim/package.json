@@ -6,13 +6,17 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc",
-    "lint": "eslint . --ext .ts --report-unused-disable-directives"
+    "lint": "eslint ."
   },
   "devDependencies": {
+    "@eslint/js": "^8.57.1",
     "@tsconfig/node-lts": "^20.1.1",
-    "@typescript-eslint/eslint-plugin": "^7.18.0",
-    "@typescript-eslint/parser": "^7.18.0",
     "eslint": "^8.57.1",
-    "typescript": "^5.3.3"
+    "globals": "^13.24.0",
+    "typescript": "^5.3.3",
+    "typescript-eslint": "^7.18.0"
+  },
+  "overrides": {
+    "eslint": "$eslint"
   }
 }
