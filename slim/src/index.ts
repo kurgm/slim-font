@@ -145,8 +145,10 @@ export const setValues: (map: FontSetting) => {
 			bety = afty = 0;
 		else if (typlen === 1)
 			bety = afty = typdic[typ];
-		else
-			bety = typdic[typ[0]], afty = typdic[typ[1]];
+		else {
+			bety = typdic[typ[0]];
+			afty = typdic[typ[1]];
+		}
 		return [
 			parsePosStr(`${x}+0.5w`, "w") + dx,
 			vertpos[pos] + parsePosStr(y, "y") + dy,
@@ -402,19 +404,19 @@ export const setValues: (map: FontSetting) => {
 			return null;
 		let xs: 1 | -1;
 		let ys: 1 | -1;
-		if      ((arg1 === -0.5 && arg2 === 0.0) || (arg1 === 1.0 && arg2 ===  0.5))
+		if      ((arg1 === -0.5 && arg2 === 0.0) || (arg1 === 1.0 && arg2 ===  0.5)) {
 			// left-top corner
-			xs =  1, ys =  1;
-		else if ((arg1 === -0.5 && arg2 === 1.0) || (arg1 === 0.0 && arg2 ===  0.5))
+			xs =  1; ys =  1;
+		} else if ((arg1 === -0.5 && arg2 === 1.0) || (arg1 === 0.0 && arg2 ===  0.5)) {
 			// right-top corner
-			xs = -1, ys =  1;
-		else if ((arg1 ===  0.5 && arg2 === 1.0) || (arg1 === 0.0 && arg2 === -0.5))
+			xs = -1; ys =  1;
+		} else if ((arg1 ===  0.5 && arg2 === 1.0) || (arg1 === 0.0 && arg2 === -0.5)) {
 			// right-bottom corner
-			xs = -1, ys = -1;
-		else if ((arg1 ===  0.5 && arg2 === 0.0) || (arg1 === 1.0 && arg2 === -0.5))
+			xs = -1; ys = -1;
+		} else if ((arg1 ===  0.5 && arg2 === 0.0) || (arg1 === 1.0 && arg2 === -0.5)) {
 			// left-bottom corner
-			xs =  1, ys = -1;
-		else
+			xs =  1; ys = -1;
+		} else
 			return null;
 		const { path, vert_outer, vert_inner, hori_outer, hori_inner, isnotinv } = pathCorner(xs, ys, px, py);
 		if (bel.vy !== 0 && bel.vx === 0) {
