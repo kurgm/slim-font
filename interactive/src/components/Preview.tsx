@@ -1,6 +1,6 @@
-import { FC } from "react";
+import type { FC } from "react";
 
-import { RenderedGlyph } from "@kurgm/slim-font";
+import type { RenderedGlyph } from "@kurgm/slim-font";
 
 import style from "./Preview.module.css";
 

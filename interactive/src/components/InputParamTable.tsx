@@ -1,7 +1,7 @@
-import { FC } from "react";
+import type { FC } from "react";
 
+import type { InputParam } from "../controlParam/param";
 import { ParamInput } from "./ParamInput";
-import { InputParam } from "../controlParam/param";
 
 import controllerPath from "./controller.png";
 import style from "./InputParamTable.module.css";

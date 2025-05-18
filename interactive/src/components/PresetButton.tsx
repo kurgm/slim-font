@@ -1,6 +1,6 @@
-import { FC, MouseEventHandler, useCallback } from "react";
+import { type FC, type MouseEventHandler, useCallback } from "react";
 
-import { PresetMap } from "../controlParam/preset";
+import type { PresetMap } from "../controlParam/preset";
 
 import style from "./PresetButton.module.css";
 

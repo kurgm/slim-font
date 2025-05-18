@@ -1,14 +1,14 @@
-import { FC, useMemo, useState } from "react";
+import { type FC, useMemo, useState } from "react";
 
-import { Render } from "./components/Render";
-import { PresetSelector } from "./components/PresetSelector";
 import { InputParamTable } from "./components/InputParamTable";
+import { PresetSelector } from "./components/PresetSelector";
+import { Render } from "./components/Render";
 import {
-  InputParam,
+  type InputParam,
   clampInputParam,
   inputParamToFontSetting,
 } from "./controlParam/param";
-import { PresetMap, presetMaps } from "./controlParam/preset";
+import { type PresetMap, presetMaps } from "./controlParam/preset";
 
 import style from "./App.module.css";
 

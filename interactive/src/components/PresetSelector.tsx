@@ -1,6 +1,6 @@
-import { FC } from "react";
+import type { FC } from "react";
 
-import { PresetMap } from "../controlParam/preset";
+import type { PresetMap } from "../controlParam/preset";
 import { PresetButton } from "./PresetButton";
 
 import style from "./PresetSelector.module.css";

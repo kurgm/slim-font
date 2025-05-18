@@ -1,6 +1,6 @@
-import { ChangeEvent, FC, useCallback } from "react";
+import { type ChangeEvent, type FC, useCallback } from "react";
 
-import { InputParam } from "../controlParam/param";
+import type { InputParam } from "../controlParam/param";
 
 import style from "./ParamInput.module.css";
 

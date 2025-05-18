@@ -1,5 +1,4 @@
-import slimDatabase from "./slim_db.js";
-import type { SlimGlyphData } from "./slim_db.js";
+import slimDatabase, { type SlimGlyphData } from "./slim_db.js";
 
 export interface FontSetting {
 	weight_x: number;
